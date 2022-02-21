@@ -9,10 +9,11 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "concurrently 'tsc' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.dev.js'",
+    "build": "yarn clean;concurrently 'tsc' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.dev.js'",
+    "build:prod": "yarn clean;concurrently 'tsc' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.prod.js'",
     "build:watch": "concurrently 'tsc -w' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.dev.js --watch'",
     "dev": "yarn build:watch",
-    "start": "webpack serve  --config webpack.dev.js",
+    "start": "webpack serve --open --config webpack.dev.js",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "serve": "http-server .",

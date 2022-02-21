@@ -25,6 +25,7 @@ export enum RepoProvider {
   "git" = "git",
   "github" = "github",
   "gitlab" = "gitlab",
+  "gist" = "gist",
 }
 
 export interface MathjaxOptions {

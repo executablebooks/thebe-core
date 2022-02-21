@@ -1,4 +1,4 @@
-import { BinderOptions, Options, RepoProvider } from "./types";
+import { BinderRequestOptions, Options, RepoProvider } from "./types";
 
 function throwOnBadProvider(actual: RepoProvider, expected: RepoProvider) {
   if (actual !== expected)
@@ -15,7 +15,7 @@ function throwOnBadProvider(actual: RepoProvider, expected: RepoProvider) {
  * @param opts BinderOptions
  * @returns a binder compatible url
  */
-export function makeGitUrl(opts: BinderOptions): string {
+export function makeGitUrl(opts: BinderRequestOptions): string {
   throwOnBadProvider(opts.repoProvider, RepoProvider.git);
   const { repo, binderUrl, ref } = opts;
   const encodedRepo = encodeURIComponent(repo.replace(/(^\/)|(\/?$)/g, ""));
@@ -33,7 +33,7 @@ export function makeGitUrl(opts: BinderOptions): string {
  * @param opts BinderOptions
  * @returns  a binder compatible url
  */
-export function makeGitLabUrl(opts: BinderOptions): string {
+export function makeGitLabUrl(opts: BinderRequestOptions): string {
   throwOnBadProvider(opts.repoProvider, RepoProvider.gitlab);
   let binderUrl = opts.binderUrl.replace(/(\/?$)/g, "");
   const repo = encodeURIComponent(
@@ -55,11 +55,20 @@ export function makeGitLabUrl(opts: BinderOptions): string {
  * @param opts BinderOptions
  * @returns  a binder compatible url
  */
-export function makeGitHubUrl(opts: BinderOptions): string {
+export function makeGitHubUrl(opts: BinderRequestOptions): string {
   throwOnBadProvider(opts.repoProvider, RepoProvider.github);
   const repo = opts.repo
     .replace(/^(https?:\/\/)?github.com\//, "")
     .replace(/(^\/)|(\/?$)/g, "");
   let binderUrl = opts.binderUrl.replace(/(\/?$)/g, "");
   return `${binderUrl}/build/gh/${repo}/${opts.ref}`;
+}
+
+export function makeGistUrl(opts: BinderRequestOptions): string {
+  throwOnBadProvider(opts.repoProvider, RepoProvider.gist);
+  const repo = opts.repo
+    .replace(/^(https?:\/\/)?github.com\//, "")
+    .replace(/(^\/)|(\/?$)/g, "");
+  let binderUrl = opts.binderUrl.replace(/(\/?$)/g, "");
+  return `${binderUrl}/build/gist/${repo}/${opts.ref}`;
 }
