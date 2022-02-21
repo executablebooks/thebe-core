@@ -197,7 +197,7 @@ class Server {
         token: string;
       } = JSON.parse(evt.data);
 
-      const phase = msg.phase.toLowerCase();
+      const phase = msg.phase?.toLowerCase() ?? "";
       switch (phase) {
         case "failed":
           es?.close();
