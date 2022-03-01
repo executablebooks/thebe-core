@@ -655,7 +655,7 @@
   resolved "https://registry.yarnpkg.com/@jupyter-widgets/schema/-/schema-0.4.0.tgz#8ef4a7fe463ffbeae4ffcf2aa4431f224a2e8943"
   integrity sha512-0MAZ6hLOCe2dYiUvEAfYvWKD7zV9AdkC4AoIEQiWqAai9Pq06oPNWMMg6x+J0ZaNnZWqR2c16f62ehd57Ql7Zw==
 
-"@jupyterlab/application@^3.0.0":
+"@jupyterlab/application@^3.0.0", "@jupyterlab/application@^3.2.9":
   version "3.2.9"
   resolved "https://registry.yarnpkg.com/@jupyterlab/application/-/application-3.2.9.tgz#750bf46fd72bf86db58d09bbc17621d2a9e6db34"
   integrity sha512-dRuQHFKtE+e5zhcuY9koV/ZeIoxqNMLMtBU/sMaKp0sj99aZ1ce+ousiAsf+Sdm7mkyJw19ectQirez88u0efw==
@@ -1170,6 +1170,15 @@
     csstype "~3.0.3"
     react "^17.0.1"
     typestyle "^2.0.4"
+
+"@jupyterlab/theme-light-extension@^3.2.9":
+  version "3.2.9"
+  resolved "https://registry.yarnpkg.com/@jupyterlab/theme-light-extension/-/theme-light-extension-3.2.9.tgz#8e44a54f763b563dd3e03da8d3b28e4b21587147"
+  integrity sha512-UnTcCqn+9uFIQAH7Eh1BPgZYVIwyqu7Qn4KLFqDSVYy3QAqcUPqcg+HarmDN6d9+XVOzIXw2oWwlAr92IuvQhQ==
+  dependencies:
+    "@jupyterlab/application" "^3.2.9"
+    "@jupyterlab/apputils" "^3.2.9"
+    "@jupyterlab/translation" "^3.2.9"
 
 "@jupyterlab/translation@^3.2.9":
   version "3.2.9"
@@ -3124,6 +3133,11 @@ font-awesome@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
   integrity sha1-j6jPBBGhoxr9B7BtKQK7n8gVoTM=
+
+fontawesome@^5.6.3:
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/fontawesome/-/fontawesome-5.6.3.tgz#73f0b865fa2b0b384e69d531c05a02c643b72f95"
+  integrity sha512-FCc+CawwsJWWprVEg9X14yI7zI+l9YVAyhzgu70qwGeDn0tLLDH/dVfqgij72g4BBGgLGfK2qnvFGAmYUkhaWg==
 
 form-data@^3.0.0:
   version "3.0.1"

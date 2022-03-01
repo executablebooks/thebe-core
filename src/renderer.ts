@@ -2,13 +2,9 @@ import { getRenderMimeRegistry } from "./rendermime";
 import { JsonObject, MathjaxOptions, Options, ThebeContext } from "./types";
 import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
 import { Widget } from "@lumino/widgets";
-import { ThebeManager } from "./manager";
+import { ThebeManager, WIDGET_MIMETYPE } from "./manager";
 import { RenderMimeRegistry } from "@jupyterlab/rendermime";
-import {
-  WIDGET_MIMETYPE,
-  WidgetRenderer,
-} from "@jupyter-widgets/html-manager/lib/output_renderers";
-import { HTMLManager } from "@jupyter-widgets/html-manager";
+import { WidgetRenderer } from "@jupyter-widgets/jupyterlab-manager";
 import ThebeKernel from "./kernel";
 
 class CellRenderer {
@@ -19,6 +15,7 @@ class CellRenderer {
   rendermime?: RenderMimeRegistry;
   model?: OutputAreaModel;
   area?: OutputArea;
+  manager?: ThebeManager;
 
   constructor(ctx: ThebeContext, id: string, notebook: string) {
     this.ctx = ctx;
@@ -29,7 +26,7 @@ class CellRenderer {
   get isBusy() {
     return (
       this.area?.node.parentElement?.querySelector(
-        `[data-thebe-busy=${this.id}]`
+        `[data-thebe-busy=c-${this.id}]`
       ) != null
     );
   }
@@ -41,14 +38,14 @@ class CellRenderer {
   /**
    * Initialise a cell
    *
-   * Purpose of init in thebe-core is to create the output area, model and rendermime
+   * Purpose of init in thebe-core is to create the output area, model and rendermimes
    * components needed to handle output of that cell based on a kernel return message
    */
   init(mathjax: MathjaxOptions) {
     // TODO can we use a single instance of the rendermime registry? in context?
     // TODO this should be in constructor
     this.rendermime = getRenderMimeRegistry(mathjax);
-    this.model = new OutputAreaModel({ trusted: false });
+    this.model = new OutputAreaModel({ trusted: true });
     this.area = new OutputArea({
       model: this.model,
       rendermime: this.rendermime,
@@ -58,12 +55,16 @@ class CellRenderer {
   // TODO if we can use a single rendermime, globally or per notebook this can move out of here
   // simplifying the kernel connect step
   hookup(manager: ThebeManager) {
-    this.rendermime?.addFactory({
-      safe: false,
-      mimeTypes: [WIDGET_MIMETYPE],
-      createRenderer: (options) =>
-        new WidgetRenderer(options, manager as unknown as HTMLManager),
-    });
+    this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
+    this.rendermime?.addFactory(
+      {
+        safe: false,
+        mimeTypes: [WIDGET_MIMETYPE],
+        createRenderer: (options) => new WidgetRenderer(options, manager),
+      },
+      0
+    );
+    this.manager = manager;
   }
 
   attach(el: HTMLElement) {
@@ -125,7 +126,7 @@ class CellRenderer {
       busy.style.height = "100%";
       busy.style.width = "100%";
       busy.style.zIndex = "100";
-      busy.setAttribute("data-thebe-busy", this.id);
+      busy.setAttribute("data-thebe-busy", `c-${this.id}`);
 
       const spinner = document.createElement("div");
       spinner.className = "thebe-core-busy-spinner";
@@ -158,19 +159,31 @@ class CellRenderer {
       console.debug(`thebe:renderer:execute ${this.id}`);
       if (!this.isBusy) this.renderBusy(true);
 
-      // Use a shadow output area for the execute request
-      const model = new OutputAreaModel({ trusted: false });
-      const area = new OutputArea({
-        model,
-        rendermime: this.rendermime!,
-      });
+      const useShadow = true;
+      if (useShadow) {
+        // Use a shadow output area for the execute request
+        const model = new OutputAreaModel({ trusted: true });
+        console.log(`thebe:renderer:execute:rendermine`, this.rendermime);
+        const area = new OutputArea({
+          model,
+          rendermime: this.rendermime!,
+        });
 
-      area.future = kernel.connection.requestExecute({ code: source });
-      await area.future.done;
+        area.future = kernel.connection.requestExecute({ code: source });
+        await area.future.done;
 
-      // trigger an update via the model associated with the OutputArea
-      // that is attached to the DOM
-      this.model?.fromJSON(model.toJSON());
+        // trigger an update via the model associated with the OutputArea
+        // that is attached to the DOM
+        console.log(model.toJSON());
+        this.model?.fromJSON(model.toJSON());
+      } else {
+        this.area.future = kernel.connection.requestExecute({
+          code: source,
+          silent: true,
+        });
+        await this.area.future.done;
+      }
+
       this.renderBusy(false);
       return {
         height: this.area.node.offsetHeight,

@@ -15,7 +15,15 @@ import {
   restartKernel,
   setupNotebook,
 } from "./api";
+
+import "@jupyterlab/theme-light-extension/style/theme.css";
+import "@jupyter-widgets/controls/css/widgets-base.css";
+import "@lumino/widgets/style/index.css";
+import "@jupyterlab/apputils/style/base.css";
+import "@jupyterlab/rendermime/style/base.css";
+import "font-awesome/css/font-awesome.css";
 import "../index.css";
+
 import { configure } from "../options";
 
 export interface JsApi {
@@ -30,6 +38,8 @@ export interface JsApi {
 
 declare global {
   interface Window {
+    define: any;
+    requirejs: any;
     thebeCore: {
       ctx: ThebeContext;
       api?: JsApi;

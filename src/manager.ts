@@ -1,8 +1,8 @@
-import { requireLoader } from "@jupyter-widgets/html-manager";
+import { requireLoader } from "./loader";
 import { DocumentRegistry } from "@jupyterlab/docregistry";
 import { INotebookModel } from "@jupyterlab/notebook";
 
-import * as pWidget from "@lumino/widgets";
+import * as LuminoWidget from "@lumino/widgets";
 
 import {
   RenderMimeRegistry,
@@ -15,14 +15,20 @@ import {
   output,
 } from "@jupyter-widgets/jupyterlab-manager";
 
-import * as base from "@jupyter-widgets/base";
-
-import * as controls from "@jupyter-widgets/controls";
 import { IKernelConnection } from "@jupyterlab/services/lib/kernel/kernel";
 import { ISessionConnection } from "@jupyterlab/services/lib/session/session";
 import { Widget } from "@lumino/widgets";
 
-const WIDGET_MIMETYPE = "application/vnd.jupyter.widget-view+json";
+export const WIDGET_MIMETYPE = "application/vnd.jupyter.widget-view+json";
+
+import * as base from "@jupyter-widgets/base";
+import * as controls from "@jupyter-widgets/controls";
+
+if (typeof window !== "undefined" && typeof window.define !== "undefined") {
+  window.define("@jupyter-widgets/base", base);
+  window.define("@jupyter-widgets/controls", controls);
+  window.define("@jupyter-widgets/output", output);
+}
 
 export class ThebeManager extends JupyterLabManager {
   loader: typeof requireLoader;
@@ -46,7 +52,7 @@ export class ThebeManager extends JupyterLabManager {
         mimeTypes: [WIDGET_MIMETYPE],
         createRenderer: (options) => new WidgetRenderer(options, this),
       },
-      1
+      0
     );
 
     this._registerWidgets();
@@ -71,11 +77,24 @@ export class ThebeManager extends JupyterLabManager {
     });
   }
 
+  async display_view(
+    msg: any,
+    view: Backbone.View<Backbone.Model>,
+    options: any
+  ): Promise<Widget> {
+    console.log("display_view", msg, view, options);
+    if (options.el) {
+      LuminoWidget.Widget.attach((view as any).pWidget, options.el);
+    }
+    return (view as any).pWidget;
+  }
+
   async loadClass(
     className: string,
     moduleName: string,
     moduleVersion: string
   ): Promise<typeof base.WidgetModel | typeof base.WidgetView> {
+    console.log("loadClass", className, moduleName, moduleVersion);
     if (
       moduleName === "@jupyter-widgets/base" ||
       moduleName === "@jupyter-widgets/controls" ||
@@ -100,18 +119,6 @@ export class ThebeManager extends JupyterLabManager {
         }
       });
     }
-  }
-
-  async display_view(
-    msg: any,
-    view: Backbone.View<Backbone.Model>,
-    options: any
-  ): Promise<Widget> {
-    const el = options.el;
-    if (el) {
-      pWidget.Widget.attach((view as any).pWidget, el);
-    }
-    return (view as any).pWidget;
   }
 }
 

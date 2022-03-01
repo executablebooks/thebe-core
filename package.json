@@ -53,9 +53,11 @@
     "@jupyterlab/outputarea": "^3.2.9",
     "@jupyterlab/rendermime": "^3.2.9",
     "@jupyterlab/services": "^6.2.8",
+    "@jupyterlab/theme-light-extension": "^3.2.9",
     "@lumino/widgets": "^1.31.1",
     "@reduxjs/toolkit": "^1.7.1",
     "@types/lodash.merge": "^4.6.6",
+    "fontawesome": "^5.6.3",
     "lodash.merge": "^4.6.2",
     "nanoid": "^3.2.0"
   }
