@@ -179,7 +179,6 @@ class CellRenderer {
       } else {
         this.area.future = kernel.connection.requestExecute({
           code: source,
-          silent: true,
         });
         await this.area.future.done;
       }

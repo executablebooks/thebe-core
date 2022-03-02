@@ -75,10 +75,10 @@ export function configure(options: Partial<Options>) {
     actions.config.update({
       config: {
         mathjax: {
-          url: options.mathjaxUrl,
-          config: options.mathjaxConfig,
+          url: opts.mathjaxUrl,
+          config: opts.mathjaxConfig,
         },
-        sessionSaving: options.binderOptions?.savedSession,
+        sessionSaving: opts.binderOptions?.savedSession,
       },
     })
   );

@@ -1,6 +1,15 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  PayloadAction,
+  ThunkAction,
+  AnyAction,
+} from "@reduxjs/toolkit";
+import { getContext } from "../context";
+import { KernelStatus } from ".";
 import { CellState } from "./cells";
 import { State } from "./types";
+import Notebook from "../notebook";
 
 export interface NotebookInfo {
   id: string;
@@ -25,6 +34,53 @@ const notebooks = createSlice({
     },
   },
 });
+
+const hookupKernel =
+  (
+    notebookId: string,
+    kernelId: string
+  ): ThunkAction<void, State, unknown, AnyAction> =>
+  (dispatch, getState) => {
+    const kernelInfo = getState().thebe.kernels[kernelId];
+    if (kernelInfo.status !== KernelStatus.ready) {
+      console.warn(
+        `Kernel ${kernelId} is not ready, cannot hookup notebook ${notebookId}`
+      );
+      return;
+    }
+    const ctx = getContext();
+    const kernel = ctx.kernels[kernelId];
+    if (!kernel) {
+      console.warn(`kernel ${kernelId} not found in context`);
+      return;
+    }
+    const notebook: Notebook = ctx.notebooks[notebookId];
+    console.log("hookupKernel", notebook, kernel);
+    notebook.hookup(kernel);
+    // consider storing current active kernelId on the notebook info
+    // e.g. dispatch(notebooks.actions.setActiveKernelId(notebookId, kernelId));
+  };
+
+const executeAll =
+  (
+    notebookId: string,
+    kernelId: string
+  ): ThunkAction<void, State, unknown, AnyAction> =>
+  () => {
+    const ctx = getContext();
+    const notebook: Notebook = ctx.notebooks[notebookId];
+    if (!notebook) {
+      console.warn(`kernel ${notebookId} not found in context`);
+      return;
+    }
+    ctx.notebooks[notebookId].executeAll(kernelId);
+    // TODO consider dispatching something about execution success or failure
+  };
+
+export const thunks = {
+  executeAll,
+  hookupKernel,
+};
 
 const getCellsForNotebook = createSelector(
   (state: State) => state.thebe.cells,

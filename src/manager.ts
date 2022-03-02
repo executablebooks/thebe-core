@@ -33,7 +33,7 @@ if (typeof window !== "undefined" && typeof window.define !== "undefined") {
 export class ThebeManager extends JupyterLabManager {
   loader: typeof requireLoader;
 
-  constructor(kernel: IKernelConnection) {
+  constructor(kernel: IKernelConnection, useCDNOnly: boolean) {
     const context = createContext(kernel);
     // TODO why are we doing renderMime setup here and in cell.hookup?
     // if we create the mamage earlier can we pass this to the cells and
@@ -56,7 +56,7 @@ export class ThebeManager extends JupyterLabManager {
     );
 
     this._registerWidgets();
-    this.loader = requireLoader;
+    this.loader = (n: string, v: string) => requireLoader(n, v, useCDNOnly);
   }
 
   _registerWidgets() {
@@ -94,7 +94,7 @@ export class ThebeManager extends JupyterLabManager {
     moduleName: string,
     moduleVersion: string
   ): Promise<typeof base.WidgetModel | typeof base.WidgetView> {
-    console.log("loadClass", className, moduleName, moduleVersion);
+    console.debug(`thebe:manager:loadClass ${moduleName}@${moduleVersion}`);
     if (
       moduleName === "@jupyter-widgets/base" ||
       moduleName === "@jupyter-widgets/controls" ||
@@ -103,21 +103,24 @@ export class ThebeManager extends JupyterLabManager {
       return super.loadClass(className, moduleName, moduleVersion);
     } else {
       // TODO: code duplicate from HTMLWidgetManager, consider a refactor
-      console.debug(`ThebeManager:loadClass ${moduleName}@${moduleVersion}`);
-      return this.loader(moduleName, moduleVersion).then((module) => {
-        if (module[className]) {
-          return module[className];
-        } else {
-          return Promise.reject(
-            "Class " +
-              className +
-              " not found in module " +
-              moduleName +
-              "@" +
-              moduleVersion
-          );
-        }
-      });
+      console.debug(`thebe:manager:loadClass using loader`);
+      let module;
+      try {
+        module = await this.loader(moduleName, moduleVersion);
+      } catch (err) {
+        console.error(`thebe:manager:loadClass loader error`, err);
+        throw err;
+      }
+      if (module[className]) {
+        return module[className];
+      } else {
+        console.error(
+          `thebe:manager:loadClass ${className} not found in module ${moduleName}@${moduleVersion}`
+        );
+        throw new Error(
+          `Class ${className} not found in module ${moduleName}@${moduleVersion}`
+        );
+      }
     }
   }
 }

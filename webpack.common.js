@@ -21,6 +21,11 @@ module.exports = {
       template: "demo/ipywidgets.html",
     }),
     new HtmlWebpackPlugin({
+      filename: "ipyleaflet.html",
+      title: "thebe-core-ipyleaflet",
+      template: "demo/ipyleaflet.html",
+    }),
+    new HtmlWebpackPlugin({
       filename: "local.html",
       title: "thebe-core-ipywidgets-local",
       template: "demo/local.html",

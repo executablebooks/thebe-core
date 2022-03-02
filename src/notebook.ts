@@ -71,11 +71,9 @@ class Notebook {
 
   hookup(kernel: ThebeKernel) {
     if (!kernel.connection) return;
-    // TODO seems the manage is all about the context! can we
-    // skip using the manager, user a single rendermin registry
-    // and an alternate execute() method in the cell?
-    // https://github.com/jupyterlab/jupyterlab/blob/master/packages/cells/src/widget.ts#L1119
-    const manager = new ThebeManager(kernel.connection);
+    // TODO some tyeof redux.config hookup for
+    const cdnOnly = true;
+    const manager = new ThebeManager(kernel.connection, cdnOnly);
     this.cells?.map((cell) => cell.hookup(manager));
   }
 

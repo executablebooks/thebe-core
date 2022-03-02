@@ -1,5 +1,4 @@
 import { Store } from "@reduxjs/toolkit";
-import { ensureOptions } from "./options";
 import { setupStore } from "./store";
 import { JsApi } from "./thebe";
 import { ThebeContext } from "./types";
