@@ -61,6 +61,23 @@ const hookupKernel =
     // e.g. dispatch(notebooks.actions.setActiveKernelId(notebookId, kernelId));
   };
 
+const executeCells =
+  (
+    notebookId: string,
+    kernelId: string,
+    cellIds: string[]
+  ): ThunkAction<void, State, unknown, AnyAction> =>
+  async () => {
+    const ctx = getContext();
+    const notebook = ctx.notebooks[notebookId];
+    if (!notebook) {
+      console.warn(`notebook ${notebookId} not found in context`);
+      return;
+    }
+    // TODO refactor - the cell should be attached to a kernel via the manager
+    notebook.executeCells(cellIds, kernelId);
+  };
+
 const executeAll =
   (
     notebookId: string,
@@ -73,11 +90,12 @@ const executeAll =
       console.warn(`kernel ${notebookId} not found in context`);
       return;
     }
-    ctx.notebooks[notebookId].executeAll(kernelId);
-    // TODO consider dispatching something about execution success or failure
+    // TODO refactor - the cell should be attached to a kernel via the manager
+    notebook.executeAll(kernelId);
   };
 
 export const thunks = {
+  executeCells,
   executeAll,
   hookupKernel,
 };

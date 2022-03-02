@@ -110,17 +110,38 @@ class Notebook {
     preprocessor?: (s: string) => string
   ) {
     if (!this.cells) return null;
-    const cell = this.cells.find((c) => c.id === cellId);
-    if (!cell) return null;
+    return this.executeCells([cellId], kernelId, preprocessor);
+  }
+
+  async executeCells(
+    cellIds: string[],
+    kernelId: string,
+    preprocessor?: (s: string) => string
+  ): Promise<{
+    height: number;
+    width: number;
+  } | null> {
+    if (!this.cells) return null;
+    const cells = this.cells.filter((c) => {
+      const found = cellIds.find((id) => id === c.id);
+      if (!found) {
+        console.warn(`Cell ${c.id} not found in notebook`);
+      }
+      return Boolean(found);
+    });
+
     const state = this.ctx.store.getState();
-    const { source } = state.thebe.cells[cellId];
-    const result = await cell?.execute(
-      kernelId,
-      preprocessor ? preprocessor(source) : source
-    );
-    if (!result) {
-      console.error(`Error executing cell ${cell.id}`);
-      return null;
+    let result = null;
+    for (let cell of cells) {
+      const { source } = state.thebe.cells[cell.id];
+      result = await cell.execute(
+        kernelId,
+        preprocessor ? preprocessor(source) : source
+      );
+      if (!result) {
+        console.error(`Error executing cell ${cell.id}`);
+        return null;
+      }
     }
     return result;
   }
