@@ -35,18 +35,18 @@ export class ThebeManager extends JupyterLabManager {
 
   constructor(kernel: IKernelConnection, useCDNOnly: boolean) {
     const context = createContext(kernel);
-    // TODO why are we doing renderMime setup here and in cell.hookup?
-    // if we create the mamage earlier can we pass this to the cells and
-    // use the single rendermime in here??
     const renderMime = new RenderMimeRegistry({
       initialFactories: standardRendererFactories,
     });
-    const settings = {
-      saveState: false,
-    };
-    super(context, renderMime, settings);
+    super(context, renderMime, { saveState: false });
 
-    renderMime.addFactory(
+    this.addWidgetFactories(renderMime);
+    this._registerWidgets();
+    this.loader = (n: string, v: string) => requireLoader(n, v, useCDNOnly);
+  }
+
+  addWidgetFactories(rendermime: RenderMimeRegistry) {
+    rendermime.addFactory(
       {
         safe: false,
         mimeTypes: [WIDGET_MIMETYPE],
@@ -54,9 +54,6 @@ export class ThebeManager extends JupyterLabManager {
       },
       0
     );
-
-    this._registerWidgets();
-    this.loader = (n: string, v: string) => requireLoader(n, v, useCDNOnly);
   }
 
   _registerWidgets() {

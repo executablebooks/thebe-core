@@ -60,14 +60,7 @@ class CellRenderer {
 
   attachKernel(kernelId: string, manager: ThebeManager) {
     this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
-    this.rendermime?.addFactory(
-      {
-        safe: false,
-        mimeTypes: [WIDGET_MIMETYPE],
-        createRenderer: (options) => new WidgetRenderer(options, manager),
-      },
-      0
-    );
+    if (this.rendermime) manager.addWidgetFactories(this.rendermime);
     this.ctx.store.dispatch(
       actions.cells.attachKernel({ id: this.id, kernelId })
     );
