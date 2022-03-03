@@ -1,11 +1,12 @@
 import { getRenderMimeRegistry } from "./rendermime";
-import { JsonObject, MathjaxOptions, Options, ThebeContext } from "./types";
+import { MathjaxOptions, ThebeContext } from "./types";
 import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
 import { Widget } from "@lumino/widgets";
 import { ThebeManager, WIDGET_MIMETYPE } from "./manager";
 import { RenderMimeRegistry } from "@jupyterlab/rendermime";
 import { WidgetRenderer } from "@jupyter-widgets/jupyterlab-manager";
 import ThebeKernel from "./kernel";
+import { actions } from "./store";
 
 class CellRenderer {
   ctx: ThebeContext;
@@ -15,7 +16,6 @@ class CellRenderer {
   rendermime?: RenderMimeRegistry;
   model?: OutputAreaModel;
   area?: OutputArea;
-  manager?: ThebeManager;
 
   constructor(ctx: ThebeContext, id: string, notebook: string) {
     this.ctx = ctx;
@@ -31,8 +31,14 @@ class CellRenderer {
     );
   }
 
-  get isAttached() {
+  get isAttachedToDOM() {
     return this.area?.isAttached;
+  }
+
+  get isAttachedToKernel() {
+    return (
+      this.ctx.store.getState().thebe.cells[this.id].attachedKernelId != null
+    );
   }
 
   /**
@@ -52,9 +58,7 @@ class CellRenderer {
     });
   }
 
-  // TODO if we can use a single rendermime, globally or per notebook this can move out of here
-  // simplifying the kernel connect step
-  hookup(manager: ThebeManager) {
+  attachKernel(kernelId: string, manager: ThebeManager) {
     this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
     this.rendermime?.addFactory(
       {
@@ -64,10 +68,17 @@ class CellRenderer {
       },
       0
     );
-    this.manager = manager;
+    this.ctx.store.dispatch(
+      actions.cells.attachKernel({ id: this.id, kernelId })
+    );
   }
 
-  attach(el: HTMLElement) {
+  detachKernel() {
+    this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
+    this.ctx.store.dispatch(actions.cells.detachKernel({ id: this.id }));
+  }
+
+  attachToDOM(el: HTMLElement) {
     if (!this.area) return;
     if (this.area.isAttached) return;
     console.debug(`thebe:renderer:attach ${this.id}`);
@@ -113,7 +124,7 @@ class CellRenderer {
   }
 
   renderBusy(show: boolean) {
-    if (!this.isAttached) return;
+    if (!this.isAttachedToDOM) return;
     console.debug(`thebe:renderer:busy ${show} ${this.id}`);
     if (show) {
       const busy = document.createElement("div");
@@ -144,7 +155,7 @@ class CellRenderer {
    *  - pass execute_count or timestamp or something back to redux on success/failure?
    *
    * @param kernelId
-   * @param data
+   * @param source
    * @returns
    */
   async execute(
@@ -155,6 +166,7 @@ class CellRenderer {
     const kernel: ThebeKernel = this.ctx.kernels[kernelId]; // TODO kernel exists/alive check?
     if (!kernel || !kernel.connection)
       throw Error(`thebe:renderer:execute No connection info for ${kernelId}`);
+
     try {
       console.debug(`thebe:renderer:execute ${this.id}`);
       if (!this.isBusy) this.renderBusy(true);
@@ -174,7 +186,6 @@ class CellRenderer {
 
         // trigger an update via the model associated with the OutputArea
         // that is attached to the DOM
-        console.log(model.toJSON());
         this.model?.fromJSON(model.toJSON());
       } else {
         this.area.future = kernel.connection.requestExecute({
@@ -188,9 +199,11 @@ class CellRenderer {
         height: this.area.node.offsetHeight,
         width: this.area.node.offsetWidth,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("thebe:renderer:execute Error:", err);
-      // TODO could update redux with cell state here
+      this.ctx.store.dispatch(
+        actions.errors.cell({ id: this.id, message: err.message })
+      );
       this.clearOnError(err);
       this.renderBusy(false);
       return null;

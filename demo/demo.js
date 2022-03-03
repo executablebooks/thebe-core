@@ -1,11 +1,10 @@
 function bootstrap(scope, options, blocks) {
   const opts = thebeCore.api.configure(options);
   scope.notebook = thebeCore.api.setupNotebook(blocks);
+  const last = scope.notebook.lastCell();
+  last.attachToDOM(document.querySelector("[data-output]"));
   thebeCore.api.connect(opts).then((kernel) => {
-    const last = scope.notebook.lastCell();
-    last.attach(document.querySelector("[data-output]"));
-    // TODO maybe request a named kernel here?
-    scope.notebook.hookup(kernel);
+    scope.notebook.attachKernel(kernel);
     scope.kernelId = kernel.id;
   });
 }

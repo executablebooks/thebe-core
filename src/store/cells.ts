@@ -4,7 +4,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface CellInfo {
   id: string;
   source: string;
-  executed: string;
+  attachedKernelId?: string;
+  executed?: string;
+  lastError?: string;
 }
 
 export type CellState = Record<string, CellInfo>;
@@ -23,6 +25,25 @@ const cells = createSlice({
         [id]: { id, source, executed: "" },
       };
     },
+    attachKernel: (
+      state: CellState,
+      action: PayloadAction<{ id: string; kernelId: string }>
+    ) => {
+      const { id, kernelId } = action.payload;
+      if (state[id].attachedKernelId === kernelId) return state;
+      return {
+        ...state,
+        [id]: { ...state[id], attachedKernelId: kernelId },
+      };
+    },
+    detachKernel: (state: CellState, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload;
+      if (!state[id].attachedKernelId) return state;
+      return {
+        ...state,
+        [id]: { ...state[id], attachedKernelId: undefined },
+      };
+    },
     executed: (
       state: CellState,
       action: PayloadAction<{ id: string; executed: string }>
@@ -32,6 +53,17 @@ const cells = createSlice({
       return {
         ...state,
         [id]: { ...state[id], executed },
+      };
+    },
+    error: (
+      state: CellState,
+      action: PayloadAction<{ id: string; timestamp: string; message: string }>
+    ) => {
+      const { id, message } = action.payload;
+      if (state[id].lastError === message) return state;
+      return {
+        ...state,
+        id: { ...state[id], lastError: message },
       };
     },
   },

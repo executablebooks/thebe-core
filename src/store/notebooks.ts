@@ -35,7 +35,7 @@ const notebooks = createSlice({
   },
 });
 
-const hookupKernel =
+const attachKernel =
   (
     notebookId: string,
     kernelId: string
@@ -56,9 +56,17 @@ const hookupKernel =
     }
     const notebook: Notebook = ctx.notebooks[notebookId];
     console.log("hookupKernel", notebook, kernel);
-    notebook.hookup(kernel);
+    notebook.attachKernel(kernel);
     // consider storing current active kernelId on the notebook info
     // e.g. dispatch(notebooks.actions.setActiveKernelId(notebookId, kernelId));
+  };
+
+const detachKernel =
+  (notebookId: string): ThunkAction<void, State, unknown, AnyAction> =>
+  () => {
+    const ctx = getContext();
+    const notebook: Notebook = ctx.notebooks[notebookId];
+    notebook.detachKernel();
   };
 
 const executeCells =
@@ -97,7 +105,8 @@ const executeAll =
 export const thunks = {
   executeCells,
   executeAll,
-  hookupKernel,
+  attachKernel,
+  detachKernel,
 };
 
 const getCellsForNotebook = createSelector(

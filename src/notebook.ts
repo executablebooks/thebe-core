@@ -69,12 +69,16 @@ class Notebook {
     return this.cells[this.cells.length - 1];
   }
 
-  hookup(kernel: ThebeKernel) {
+  attachKernel(kernel: ThebeKernel) {
     if (!kernel.connection) return;
     // TODO some tyeof redux.config hookup for
     const cdnOnly = true;
     const manager = new ThebeManager(kernel.connection, cdnOnly);
-    this.cells?.map((cell) => cell.hookup(manager));
+    this.cells?.map((cell) => cell.attachKernel(kernel.id, manager));
+  }
+
+  detachKernel() {
+    this.cells?.map((cell) => cell.detachKernel());
   }
 
   async executeUpTo(
