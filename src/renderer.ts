@@ -6,50 +6,24 @@ import { ThebeManager, WIDGET_MIMETYPE } from "./manager";
 import { RenderMimeRegistry } from "@jupyterlab/rendermime";
 import { WidgetRenderer } from "@jupyter-widgets/jupyterlab-manager";
 import ThebeKernel from "./kernel";
-import { actions } from "./store";
+import { actions, selectors } from "./store";
 
 class CellRenderer {
   ctx: ThebeContext;
   id: string;
   notebook: string;
 
-  rendermime?: RenderMimeRegistry;
-  model?: OutputAreaModel;
-  area?: OutputArea;
+  rendermime: RenderMimeRegistry;
+  model: OutputAreaModel;
+  area: OutputArea;
 
   constructor(ctx: ThebeContext, id: string, notebook: string) {
     this.ctx = ctx;
     this.id = id;
     this.notebook = notebook;
-  }
 
-  get isBusy() {
-    return (
-      this.area?.node.parentElement?.querySelector(
-        `[data-thebe-busy=c-${this.id}]`
-      ) != null
-    );
-  }
+    const mathjax = selectors.config.selectMathjaxConfig(ctx.store.getState());
 
-  get isAttachedToDOM() {
-    return this.area?.isAttached;
-  }
-
-  get isAttachedToKernel() {
-    return (
-      this.ctx.store.getState().thebe.cells[this.id].attachedKernelId != null
-    );
-  }
-
-  /**
-   * Initialise a cell
-   *
-   * Purpose of init in thebe-core is to create the output area, model and rendermimes
-   * components needed to handle output of that cell based on a kernel return message
-   */
-  init(mathjax: MathjaxOptions) {
-    // TODO can we use a single instance of the rendermime registry? in context?
-    // TODO this should be in constructor
     this.rendermime = getRenderMimeRegistry(mathjax);
     this.model = new OutputAreaModel({ trusted: true });
     this.area = new OutputArea({
@@ -58,8 +32,26 @@ class CellRenderer {
     });
   }
 
+  get isBusy() {
+    return (
+      this.area.node.parentElement?.querySelector(
+        `[data-thebe-busy=c-${this.id}]`
+      ) != null
+    );
+  }
+
+  get isAttachedToDOM() {
+    return this.area.isAttached;
+  }
+
+  get isAttachedToKernel() {
+    return (
+      this.ctx.store.getState().thebe.cells[this.id].attachedKernelId != null
+    );
+  }
+
   attachKernel(kernelId: string, manager: ThebeManager) {
-    this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
+    this.rendermime.removeMimeType(WIDGET_MIMETYPE);
     if (this.rendermime) manager.addWidgetFactories(this.rendermime);
     this.ctx.store.dispatch(
       actions.cells.attachKernel({ id: this.id, kernelId })
@@ -67,7 +59,7 @@ class CellRenderer {
   }
 
   detachKernel() {
-    this.rendermime?.removeMimeType(WIDGET_MIMETYPE);
+    this.rendermime.removeMimeType(WIDGET_MIMETYPE);
     this.ctx.store.dispatch(actions.cells.detachKernel({ id: this.id }));
   }
 
@@ -136,9 +128,9 @@ class CellRenderer {
       spinner.className = "thebe-core-busy-spinner";
       busy.append(spinner);
 
-      this.area?.node.parentElement?.append(busy);
+      this.area.node.parentElement?.append(busy);
     } else {
-      const busy = this.area?.node.parentElement?.querySelector(".thebe-busy");
+      const busy = this.area.node.parentElement?.querySelector(".thebe-busy");
       busy?.parentElement?.removeChild(busy);
     }
   }
@@ -179,7 +171,7 @@ class CellRenderer {
 
         // trigger an update via the model associated with the OutputArea
         // that is attached to the DOM
-        this.model?.fromJSON(model.toJSON());
+        this.model.fromJSON(model.toJSON());
       } else {
         this.area.future = kernel.connection.requestExecute({
           code: source,

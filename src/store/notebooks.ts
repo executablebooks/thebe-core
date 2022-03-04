@@ -109,7 +109,7 @@ export const thunks = {
   detachKernel,
 };
 
-const getCellsForNotebook = createSelector(
+const selectCellsForNotebook = createSelector(
   (state: State) => state.thebe.cells,
   (state: State, notebookId: string) => state.thebe.notebooks[notebookId],
   (cells: CellState, notebook?: NotebookInfo) =>
@@ -119,7 +119,7 @@ const getCellsForNotebook = createSelector(
 );
 
 export const selectors = {
-  getCellsForNotebook,
+  selectCellsForNotebook,
 };
 
 export default notebooks;

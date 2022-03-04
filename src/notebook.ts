@@ -18,7 +18,7 @@ class Notebook {
   ctx: ThebeContext;
   cells?: CellRenderer[];
 
-  static fromCodeBlocks(blocks: CodeBlock[], mathjax: MathjaxOptions = {}) {
+  static fromCodeBlocks(blocks: CodeBlock[]) {
     const ctx = getContext();
     const id = nanoid();
     ctx.store.dispatch(
@@ -34,7 +34,6 @@ class Notebook {
       ctx.store.dispatch(actions.cells.add({ id: c.id, source: c.source }));
       const cell = new CellRenderer(ctx, c.id, id);
       console.debug(`thebe:notebook:fromCodeBlocks Initializing cell ${c.id}`);
-      cell.init(mathjax);
       return cell;
     });
 
