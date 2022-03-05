@@ -5,7 +5,7 @@ import ThebeKernel from "./kernel";
 import { ThebeManager } from "./manager";
 import { actions } from "./store";
 import notebooks from "./store/notebooks";
-import { JsonObject, MathjaxOptions, Options, ThebeContext } from "./types";
+import { ThebeContext } from "./types";
 
 export interface CodeBlock {
   id: string;
@@ -80,11 +80,7 @@ class Notebook {
     this.cells?.map((cell) => cell.detachKernel());
   }
 
-  async executeUpTo(
-    kernelId: string,
-    cellId: string,
-    preprocessor?: (s: string) => string
-  ) {
+  async executeUpTo(cellId: string, preprocessor?: (s: string) => string) {
     if (!this.cells) return null;
     const idx = this.cells.findIndex((c) => c.id === cellId);
     if (idx === -1) return null;
@@ -96,7 +92,6 @@ class Notebook {
       console.debug(`Executing cell ${cell.id}`);
       const { source } = state.thebe.cells[cell.id];
       result = await cell?.execute(
-        kernelId,
         preprocessor ? preprocessor(source) : source
       );
       if (!result) {
@@ -107,18 +102,13 @@ class Notebook {
     return result;
   }
 
-  async executeOnly(
-    kernelId: string,
-    cellId: string,
-    preprocessor?: (s: string) => string
-  ) {
+  async executeOnly(cellId: string, preprocessor?: (s: string) => string) {
     if (!this.cells) return null;
-    return this.executeCells([cellId], kernelId, preprocessor);
+    return this.executeCells([cellId], preprocessor);
   }
 
   async executeCells(
     cellIds: string[],
-    kernelId: string,
     preprocessor?: (s: string) => string
   ): Promise<{
     height: number;
@@ -137,10 +127,7 @@ class Notebook {
     let result = null;
     for (let cell of cells) {
       const { source } = state.thebe.cells[cell.id];
-      result = await cell.execute(
-        kernelId,
-        preprocessor ? preprocessor(source) : source
-      );
+      result = await cell.execute(preprocessor ? preprocessor(source) : source);
       if (!result) {
         console.error(`Error executing cell ${cell.id}`);
         return null;
@@ -149,10 +136,7 @@ class Notebook {
     return result;
   }
 
-  async executeAll(
-    kernelId: string,
-    preprocessor?: (s: string) => string
-  ): Promise<{
+  async executeAll(preprocessor?: (s: string) => string): Promise<{
     height: number;
     width: number;
   } | null> {
@@ -162,10 +146,7 @@ class Notebook {
     let result = null;
     for (let cell of this.cells) {
       const { source } = state.thebe.cells[cell.id];
-      result = await cell.execute(
-        kernelId,
-        preprocessor ? preprocessor(source) : source
-      );
+      result = await cell.execute(preprocessor ? preprocessor(source) : source);
       if (!result) {
         console.error(`Error executing cell ${cell.id}`);
         return null;

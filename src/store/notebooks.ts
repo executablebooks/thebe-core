@@ -72,7 +72,6 @@ const detachKernel =
 const executeCells =
   (
     notebookId: string,
-    kernelId: string,
     cellIds: string[]
   ): ThunkAction<void, State, unknown, AnyAction> =>
   async () => {
@@ -83,14 +82,11 @@ const executeCells =
       return;
     }
     // TODO refactor - the cell should be attached to a kernel via the manager
-    notebook.executeCells(cellIds, kernelId);
+    notebook.executeCells(cellIds);
   };
 
 const executeAll =
-  (
-    notebookId: string,
-    kernelId: string
-  ): ThunkAction<void, State, unknown, AnyAction> =>
+  (notebookId: string): ThunkAction<void, State, unknown, AnyAction> =>
   () => {
     const ctx = getContext();
     const notebook: Notebook = ctx.notebooks[notebookId];
@@ -99,7 +95,7 @@ const executeAll =
       return;
     }
     // TODO refactor - the cell should be attached to a kernel via the manager
-    notebook.executeAll(kernelId);
+    notebook.executeAll();
   };
 
 export const thunks = {

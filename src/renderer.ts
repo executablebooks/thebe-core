@@ -139,16 +139,23 @@ class CellRenderer {
    * TODO
    *  - pass execute_count or timestamp or something back to redux on success/failure?
    *
-   * @param kernelId
    * @param source
    * @returns
    */
   async execute(
-    kernelId: string,
     source: string
   ): Promise<{ height: number; width: number } | null> {
-    if (!this.area) return null;
-    const kernel: ThebeKernel = this.ctx.kernels[kernelId]; // TODO kernel exists/alive check?
+    const kernelId = selectors.cells.selectAttachedKernelId(
+      this.ctx.store.getState(),
+      this.id
+    );
+    if (!this.isAttachedToKernel || !kernelId) {
+      console.warn(
+        "Attempting to execute on a cell without an attached kernel"
+      );
+      return null;
+    }
+    const kernel: ThebeKernel = this.ctx.kernels[kernelId!]; // TODO kernel exists/alive check?
     if (!kernel || !kernel.connection)
       throw Error(`thebe:renderer:execute No connection info for ${kernelId}`);
 

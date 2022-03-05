@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { State } from ".";
 
 // All Cells are code
 export interface CellInfo {
@@ -68,5 +69,13 @@ const cells = createSlice({
     },
   },
 });
+
+function selectAttachedKernelId(state: State, cellId: string) {
+  return state.thebe.cells[cellId].attachedKernelId;
+}
+
+export const selectors = {
+  selectAttachedKernelId,
+};
 
 export default cells;

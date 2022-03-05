@@ -74,6 +74,9 @@ class ThebeKernel {
     console.debug(`requesting restart for kernel ${this.id}`);
     await this.connection.restart();
   }
+
+  async refresh() {}
+  async dispose() {}
 }
 
 export default ThebeKernel;

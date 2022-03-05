@@ -117,15 +117,12 @@ def update(w = 1, amp = 1):
 
         const runAllButton = document.getElementById("run-all");
         runAllButton.onclick = (ev) => {
-          window.demo.notebook.executeAll(window.demo.kernelId);
+          window.demo.notebook.executeAll();
         };
 
         const runLastButton = document.getElementById("run-last");
         runLastButton.onclick = (ev) => {
-          window.demo.notebook.executeOnly(
-            window.demo.kernelId,
-            window.demo.notebook.lastCell().id
-          );
+          window.demo.notebook.executeOnly(window.demo.notebook.lastCell().id);
         };
 
         const restartButton = document.getElementById("restart");
