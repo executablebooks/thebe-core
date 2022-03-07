@@ -16,9 +16,9 @@ module.exports = {
       template: "demo/index.html",
     }),
     new HtmlWebpackPlugin({
-      filename: "basic.html",
+      filename: "basic-observe.html",
       title: "thebe-core-basic",
-      template: "demo/demo-basic.html",
+      template: "demo/demo-basic-observe.html",
     }),
     new HtmlWebpackPlugin({
       filename: "local.html",
