@@ -2,28 +2,6 @@
 <html>
   <head>
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        extensions: ["tex2jax.js"],
-        jax: ["input/TeX", "output/HTML-CSS"],
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-          processEscapes: true
-        },
-        "HTML-CSS": { fonts: ["TeX"] }
-      });
-    </script>
-    <script
-      type="text/javascript"
-      async
-      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML"
-    ></script>
-    <script
-      type="text/javascript"
-      async
-      src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
-    />
     <link
       rel="stylesheet"
       href="https://unpkg.com/@curvenote/article/dist/curvenote.css"
@@ -36,103 +14,51 @@
     </style>
   </head>
   <body>
-    <h1>Demo: thebe-core</h1>
-    <p>
-      This is a demonstration of <em>thebe-core</em> executing an isolated code
-      cell
-    </p>
-    <button id="run-all">run all</button>
-    <button id="run-last">run last</button>
-    <button id="restart">restart</button>
-    <p />
-    <div data-output="true">
-      <img src="/output.png" />
-    </div>
-    <button
-      id="reset"
-      title="removes servers/kernels and force binder to rebuild"
-    >
-      hard reset
-    </button>
-    <script src="/demo.js"></script>
-    <script>
-      const options = {
-        useBinder: true,
-        requestKernel: true,
-        binderOptions: {
-          // binderUrl: "http://52.41.228.104:8000/services/binder/",
-          // repo: "stevejpurves/base",
-          repo: "binder-examples/requirements",
-          ref: "master",
-        },
-        kernelOptions: {
-          name: "python3",
-        },
-      };
-
-      const code = [
-        `
-      %matplotlib inline
-      import numpy as np
-      import matplotlib.pyplot as plt
-      import scipy.stats as stats
-      `,
-        `
-      # oxa:mu
-      mu = 5
-      # oxa:sigma
-      sigma = 5
-        `,
-        `
-      plt.ion()
-      fig, ax = plt.subplots()
-      x = np.arange(-10,10,0.1)
-      y = stats.norm.pdf(x, mu, sigma)
-      ax.plot(x,y);
-      plt.grid(True)
-        `,
-      ];
-
-      document.addEventListener("DOMContentLoaded", function () {
-        function randomId() {
-          const uint32 = window.crypto.getRandomValues(new Uint32Array(1))[0];
-          return "id-" + uint32.toString(16);
-        }
-
-        window.demo = { notebook: null, kernelId: null };
-        bootstrap(
-          window.demo,
-          options,
-          code.map((c) => ({
-            id: randomId(),
-            source: c,
-          }))
-        );
-
-        const runAllButton = document.getElementById("run-all");
-        runAllButton.onclick = (ev) => {
-          window.demo.notebook.executeAll(window.demo.kernelId);
-        };
-
-        const runLastButton = document.getElementById("run-last");
-        runLastButton.onclick = (ev) => {
-          window.demo.notebook.executeOnly(
-            window.demo.kernelId,
-            window.demo.notebook.lastCell().id
-          );
-        };
-
-        const restartButton = document.getElementById("restart");
-        restartButton.onclick = (ev) => {
-          window.thebeCore.api.restartKernel(demo.kernelId);
-        };
-
-        const resetButton = document.getElementById("reset");
-        resetButton.onclick = (ev) => {
-          window.thebeCore.api.clear();
-          window.location.reload();
-        };
-      });
-    </script>
+    <article>
+      <h1>thebe-core: available demos</h1>
+      <p>
+        This is a listing of the available demos for thebe-core in use from the
+        native js api,
+      </p>
+      <ul>
+        <li>
+          <a href="./basic-observe.html"
+            >Basic demo connecting to mybinder.org</a
+          >
+        </li>
+        <li>
+          <a href="./ipywidgets.html"
+            >ipywidgets demo connecting to mybinder.org</a
+          >
+        </li>
+        <li>
+          <a href="./local.html"
+            >ipywidgets demo connecting to a local Jupyter instance</a
+          >
+        </li>
+        <li>
+          <a href="./ipyleaflet.html"
+            >ipyleaflet demo connecting to a local Jupyter instance</a
+          >
+        </li>
+        <li>
+          <a href="./demo-single.html"
+            >Demo of rendering a single cell without use of the Notebook
+            interface</a
+          >
+        </li>
+        <li>
+          <a href="./demo-notebook.html"
+            >Demo of rendering a single cell without use of the Notebook
+            interface</a
+          >
+        </li>
+        <li>
+          <a href="./demo-kernels.html"
+            >Demo of different kernel controls and interaction options</a
+          >
+        </li>
+      </ul>
+    </article>
   </body>
 </html>

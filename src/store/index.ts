@@ -3,8 +3,8 @@ import { logger } from "./middleware";
 import { rootReducer } from "./reducers";
 
 export * from "./reducers";
-export * from "./actions";
-export * from "./selectors";
+export { default as actions } from "./actions";
+export { default as selectors } from "./selectors";
 export { ServerInfo, ServerStatus } from "./servers";
 export { KernelInfo, KernelStatus } from "./kernels";
 

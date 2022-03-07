@@ -4,6 +4,7 @@ import kernels from "./kernels";
 import notebooks from "./notebooks";
 import config from "./config";
 import cells from "./cells";
+import errors from "./errors";
 
 export const thebeReducer = combineReducers({
   config: config.reducer,
@@ -11,6 +12,7 @@ export const thebeReducer = combineReducers({
   kernels: kernels.reducer,
   cells: cells.reducer,
   notebooks: notebooks.reducer,
+  errors: errors.reducer,
 });
 
 export const rootReducer = combineReducers({ thebe: thebeReducer });

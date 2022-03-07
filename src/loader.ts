@@ -1,12 +1,3 @@
-/***************************************************************************
- * Copyright (c) 2018, Voilà contributors                                   *
- * Copyright (c) 2018, QuantStack                                           *
- *                                                                          *
- * Distributed under the terms of the BSD 3-Clause License.                 *
- *                                                                          *
- * The full license is in the file LICENSE, distributed with this software. *
- ****************************************************************************/
-
 const cdn = "https://cdn.jsdelivr.net/npm/";
 
 /**
@@ -14,15 +5,10 @@ const cdn = "https://cdn.jsdelivr.net/npm/";
  *
  * @param pkg Package name or names to load
  */
-function requirePromise(pkg: string[]) {
-  return new Promise((resolve, reject) => {
-    const require = window.requirejs;
-    if (require === undefined) {
-      reject("Requirejs is needed, please ensure it is loaded on the page.");
-    } else {
-      require(pkg, resolve, reject);
-    }
-  });
+function requirePromise(moduleName: string) {
+  return new Promise((resolve, reject) =>
+    window.requirejs([`${moduleName}`], resolve, reject)
+  );
 }
 
 function moduleNameToCDNUrl(moduleName: string, moduleVersion: string) {
@@ -44,6 +30,22 @@ function moduleNameToCDNUrl(moduleName: string, moduleVersion: string) {
   return `${cdn}${packageName}@${moduleVersion}/dist/${fileName}`;
 }
 
+async function requireFromCDN(moduleName: string, moduleVersion: string) {
+  const url = moduleNameToCDNUrl(moduleName, moduleVersion);
+  const conf: { paths: { [key: string]: string } } = { paths: {} };
+  conf.paths[moduleName] = moduleNameToCDNUrl(moduleName, moduleVersion);
+  window.requirejs.config(conf);
+
+  try {
+    // note: await needed here for try/catch behaviour
+    const module = requirePromise(moduleName);
+    return module;
+  } catch (err: any) {
+    console.error(`thebe:loader requirejs error on cdn require`, err);
+    throw err;
+  }
+}
+
 /**
  * Load an amd module locally and fall back to specified CDN if unavailable.
  *
@@ -56,26 +58,40 @@ function moduleNameToCDNUrl(moduleName: string, moduleVersion: string) {
  *
  * The semver range is only used with the CDN.
  */
-export function requireLoader(
+export async function requireLoader(
   moduleName: string,
-  moduleVersion: string
+  moduleVersion: string,
+  useCDNOnly: boolean = false
 ): Promise<any> {
-  return requirePromise([`${moduleName}`]).catch((err) => {
-    const failedId = err.requireModules && err.requireModules[0];
-    if (failedId) {
-      console.log(`Falling back to ${cdn} for ${moduleName}@${moduleVersion}`);
-      const require = window.requirejs;
-      if (require === undefined) {
-        throw new Error(
-          "Requirejs is needed, please ensure it is loaded on the page."
+  if (window.requirejs === undefined) {
+    console.error(`thebe:loader requirejs is undefined`);
+    throw new Error(
+      "Requirejs is needed, please ensure it is loaded on the page."
+    );
+  }
+  console.log(`thebe:loader loading ${moduleName}@${moduleVersion}`);
+  if (useCDNOnly) {
+    return requireFromCDN(moduleName, moduleVersion);
+  } else {
+    try {
+      // Try to load the module locally
+      // note: await needed here for try/catch behaviour
+      const module = await requirePromise(moduleName);
+      return module;
+    } catch (err: any) {
+      const failedId = err.requireModules && err.requireModules[0];
+      window.requirejs.undef(failedId);
+      if (!failedId) {
+        console.error(`thebe:loader requirejs error on local require`, err);
+        throw err;
+      } else {
+        // If it fails, try to load it from the CDN
+        console.debug(
+          `thebe:loader falling back to ${cdn} for ${moduleName}@${moduleVersion}`
         );
+        window.requirejs.undef(failedId);
+        return requireFromCDN(moduleName, moduleVersion);
       }
-      const conf: { paths: { [key: string]: string } } = { paths: {} };
-      conf.paths[moduleName] = moduleNameToCDNUrl(moduleName, moduleVersion);
-      require.undef(failedId);
-      require.config(conf);
-
-      return requirePromise([`${moduleName}`]);
     }
-  });
+  }
 }

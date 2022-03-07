@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SavedSessionOptions, MathjaxOptions } from "../types";
 import merge from "lodash.merge";
+import { State } from "./types";
 
 export type ConfigState = {
   sessionSaving: SavedSessionOptions;
@@ -28,5 +29,13 @@ const config = createSlice({
     },
   },
 });
+
+function selectMathjaxConfig(state: State) {
+  return state.thebe.config.mathjax;
+}
+
+export const selectors = {
+  selectMathjaxConfig,
+};
 
 export default config;

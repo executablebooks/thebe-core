@@ -16,14 +16,34 @@ module.exports = {
       template: "demo/index.html",
     }),
     new HtmlWebpackPlugin({
-      filename: "ipywidgets.html",
-      title: "thebe-core-ipywidgets",
-      template: "demo/ipywidgets.html",
+      filename: "basic-observe.html",
+      title: "thebe-core-basic",
+      template: "demo/demo-basic-observe.html",
     }),
     new HtmlWebpackPlugin({
       filename: "local.html",
       title: "thebe-core-ipywidgets-local",
       template: "demo/local.html",
+    }),
+    new HtmlWebpackPlugin({
+      filename: "ipywidgets.html",
+      title: "thebe-core-ipywidgets",
+      template: "demo/ipywidgets.html",
+    }),
+    new HtmlWebpackPlugin({
+      filename: "ipyleaflet.html",
+      title: "thebe-core-ipyleaflet",
+      template: "demo/ipyleaflet.html",
+    }),
+    new HtmlWebpackPlugin({
+      filename: "demo-single.html",
+      title: "thebe-core-demo-single",
+      template: "demo/demo-single.html",
+    }),
+    new HtmlWebpackPlugin({
+      filename: "demo-kernels.html",
+      title: "thebe-core-demo-kernels",
+      template: "demo/demo-kernels.html",
     }),
     new DefinePlugin({ "process.env": {} }),
   ],

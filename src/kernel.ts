@@ -1,11 +1,11 @@
 import { nanoid, Store, Unsubscribe } from "@reduxjs/toolkit";
-import { ServerInfo, ServerStatus } from "./store/servers";
 import { KernelOptions, Options, ThebeContext } from "./types";
 import kernels from "./store/kernels";
-import { KernelManager, ServerConnection } from "@jupyterlab/services";
+import { Kernel, KernelManager, ServerConnection } from "@jupyterlab/services";
 import { IKernelConnection } from "@jupyterlab/services/lib/kernel/kernel";
 import Server from "./server";
 import { getContext } from "./context";
+import { KernelInfo, ServerInfo, ServerStatus } from "./store";
 
 class ThebeKernel {
   id: string;
@@ -16,10 +16,11 @@ class ThebeKernel {
   connection?: IKernelConnection;
   _unsub?: Unsubscribe;
 
-  constructor(id: string, serverId: string) {
+  constructor(id: string, serverId?: string) {
     this.ctx = getContext();
     this.id = id;
     this.serverId = serverId;
+    this.ctx.kernels[this.id] = this;
   }
 
   unsubscribe() {
@@ -33,6 +34,7 @@ class ThebeKernel {
     if (server.isReady()) {
       return this.requestKernelFromServer(server, name);
     }
+    // could do this via middleware
     this._unsub = this.ctx.store.subscribe(async () => {
       const state = this.ctx.store.getState();
       const kernelExists = state.thebe.kernels[this.id]!;
@@ -41,6 +43,27 @@ class ThebeKernel {
       }
     });
     return this;
+  }
+
+  listen(
+    listener: (info: { kernel?: KernelInfo; server?: ServerInfo }) => void
+  ) {
+    let last: { kernel?: KernelInfo; server?: ServerInfo } = {};
+
+    const observerFn = () => {
+      const state = this.ctx.store.getState();
+      const kernel = state.thebe.kernels[this.id];
+      const server = this.serverId
+        ? state.thebe.servers[this.serverId]
+        : undefined;
+      if (last.server === server && last.kernel === kernel) {
+        listener({ kernel: last.kernel, server: last.server });
+        return;
+      }
+      listener({ kernel, server });
+    };
+    observerFn();
+    return this.ctx.store.subscribe(observerFn);
   }
 
   async requestKernelFromServer(server: Server, name: string) {
@@ -61,7 +84,6 @@ class ThebeKernel {
     });
     await km.ready;
     this.connection = await km.startNew({ name });
-    this.ctx.kernels[this.id] = this;
     this.ctx.store.dispatch(kernels.actions.ready({ id: this.id }));
     return this;
   }
@@ -74,6 +96,9 @@ class ThebeKernel {
     console.debug(`requesting restart for kernel ${this.id}`);
     await this.connection.restart();
   }
+
+  async refresh() {}
+  async dispose() {}
 }
 
 export default ThebeKernel;

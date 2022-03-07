@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
+    "prepublish": "yarn build",
     "build": "yarn clean;concurrently 'tsc' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.dev.js'",
     "build:prod": "yarn clean;concurrently 'tsc' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.prod.js'",
     "build:watch": "concurrently 'tsc -w' 'npx copyfiles src/index.css dist -u 1' 'webpack --config webpack.dev.js --watch'",

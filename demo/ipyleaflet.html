@@ -82,21 +82,26 @@
       };
 
       const code = [
-        `%matplotlib widget
-import ipywidgets as widgets
-import matplotlib.pyplot as plt
-import numpy as np
+        `from ipyleaflet import Map
+from ipywidgets import Layout
+# Collect common parameters
+zoom = 8 # @param
+place = None # @param
 
-x = np.linspace(0,10)
+# Create ipyleaflet tile layer from that server
 
-def sine_func(x, w, amp):
-  return amp*np.sin(w*x)
+places = dict(
+    orotava=dict(center=(28.389216, -16.520283), zoom=12),
+    pico_tiede=dict(center=(28.272401, -16.642457), zoom=12),
+    santa_cruz=dict(center=(28.466965, -16.249938), zoom=12)
+)
 
-@widgets.interact(w=(0, 4, 0.25), amp=(0, 4, .1))
-def update(w = 1, amp = 1):
-  plt.clf()
-  plt.ylim(-4, 4)
-  plt.plot(x, sine_func(x, w, amp))`,
+center = places[place]["center"] if place is not None else (28.586850, -15.648742)
+zoom = places[place]["zoom"] if place is not None else zoom
+
+# Create ipyleaflet map, add layers, add controls, and display
+m = Map(center=center, zoom=zoom, layout=Layout( height='800px'))
+m`,
       ];
 
       document.addEventListener("DOMContentLoaded", function () {

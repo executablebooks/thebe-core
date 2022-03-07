@@ -33,24 +33,12 @@
       body {
         padding: 10px;
       }
-      .console {
-        max-height: 300px;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        border: 2px solid grey;
-        background-color: black;
-        color: greenyellow;
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-      }
     </style>
   </head>
   <body>
-    <h1>Demo: Local Server: thebe-core with ipywidgets</h1>
+    <h1>Demo: thebe-core</h1>
     <p>
-      Ths is a demostration of <em>thebe-core</em> executing an isolated code
+      This is a demonstration of <em>thebe-core</em> executing an isolated code
       cell
     </p>
     <button id="run-all">run all</button>
@@ -69,40 +57,46 @@
     <script src="/demo.js"></script>
     <script>
       const options = {
-        useBinder: false,
+        useBinder: true,
         requestKernel: true,
+        binderOptions: {
+          // binderUrl: "http://52.41.228.104:8000/services/binder/",
+          // repo: "stevejpurves/base",
+          repo: "binder-examples/requirements",
+          ref: "master",
+        },
         kernelOptions: {
           name: "python3",
-          serverSettings: {
-            appendToken: true,
-            baseUrl: "http://localhost:8888",
-            token: "test-secret",
-          },
         },
       };
 
       const code = [
-        `%matplotlib widget
-import ipywidgets as widgets
-import matplotlib.pyplot as plt
-import numpy as np
-
-x = np.linspace(0,10)
-
-def sine_func(x, w, amp):
-  return amp*np.sin(w*x)
-
-@widgets.interact(w=(0, 4, 0.25), amp=(0, 4, .1))
-def update(w = 1, amp = 1):
-  plt.clf()
-  plt.ylim(-4, 4)
-  plt.plot(x, sine_func(x, w, amp))`,
+        `
+      %matplotlib inline
+      import numpy as np
+      import matplotlib.pyplot as plt
+      import scipy.stats as stats
+      `,
+        `
+      # oxa:mu
+      mu = 5
+      # oxa:sigma
+      sigma = 5
+        `,
+        `
+      plt.ion()
+      fig, ax = plt.subplots()
+      x = np.arange(-10,10,0.1)
+      y = stats.norm.pdf(x, mu, sigma)
+      ax.plot(x,y);
+      plt.grid(True)
+        `,
       ];
 
       document.addEventListener("DOMContentLoaded", function () {
         function randomId() {
           const uint32 = window.crypto.getRandomValues(new Uint32Array(1))[0];
-          return uint32.toString(16);
+          return "id-" + uint32.toString(16);
         }
 
         window.demo = { notebook: null, kernelId: null };

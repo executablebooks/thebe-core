@@ -5,7 +5,7 @@ import ThebeKernel from "./kernel";
 import { ThebeManager } from "./manager";
 import { actions } from "./store";
 import notebooks from "./store/notebooks";
-import { JsonObject, MathjaxOptions, Options, ThebeContext } from "./types";
+import { ThebeContext } from "./types";
 
 export interface CodeBlock {
   id: string;
@@ -18,7 +18,7 @@ class Notebook {
   ctx: ThebeContext;
   cells?: CellRenderer[];
 
-  static fromCodeBlocks(blocks: CodeBlock[], mathjax: MathjaxOptions = {}) {
+  static fromCodeBlocks(blocks: CodeBlock[]) {
     const ctx = getContext();
     const id = nanoid();
     ctx.store.dispatch(
@@ -34,7 +34,6 @@ class Notebook {
       ctx.store.dispatch(actions.cells.add({ id: c.id, source: c.source }));
       const cell = new CellRenderer(ctx, c.id, id);
       console.debug(`thebe:notebook:fromCodeBlocks Initializing cell ${c.id}`);
-      cell.init(mathjax);
       return cell;
     });
 
@@ -69,21 +68,26 @@ class Notebook {
     return this.cells[this.cells.length - 1];
   }
 
-  hookup(kernel: ThebeKernel) {
-    if (!kernel.connection) return;
-    // TODO seems the manage is all about the context! can we
-    // skip using the manager, user a single rendermin registry
-    // and an alternate execute() method in the cell?
-    // https://github.com/jupyterlab/jupyterlab/blob/master/packages/cells/src/widget.ts#L1119
-    const manager = new ThebeManager(kernel.connection);
-    this.cells?.map((cell) => cell.hookup(manager));
+  async waitForKernel(kernel: Promise<ThebeKernel>) {
+    return kernel.then((k) => {
+      this.attachKernel(k);
+      return k;
+    });
   }
 
-  async executeUpTo(
-    kernelId: string,
-    cellId: string,
-    preprocessor?: (s: string) => string
-  ) {
+  attachKernel(kernel: ThebeKernel) {
+    if (!kernel.connection) return;
+    // TODO some tyeof redux.config hookup for
+    const cdnOnly = true;
+    const manager = new ThebeManager(kernel.connection, cdnOnly);
+    this.cells?.map((cell) => cell.attachKernel(kernel.id, manager));
+  }
+
+  detachKernel() {
+    this.cells?.map((cell) => cell.detachKernel());
+  }
+
+  async executeUpTo(cellId: string, preprocessor?: (s: string) => string) {
     if (!this.cells) return null;
     const idx = this.cells.findIndex((c) => c.id === cellId);
     if (idx === -1) return null;
@@ -95,7 +99,6 @@ class Notebook {
       console.debug(`Executing cell ${cell.id}`);
       const { source } = state.thebe.cells[cell.id];
       result = await cell?.execute(
-        kernelId,
         preprocessor ? preprocessor(source) : source
       );
       if (!result) {
@@ -106,31 +109,41 @@ class Notebook {
     return result;
   }
 
-  async executeOnly(
-    kernelId: string,
-    cellId: string,
-    preprocessor?: (s: string) => string
-  ) {
+  async executeOnly(cellId: string, preprocessor?: (s: string) => string) {
     if (!this.cells) return null;
-    const cell = this.cells.find((c) => c.id === cellId);
-    if (!cell) return null;
+    return this.executeCells([cellId], preprocessor);
+  }
+
+  async executeCells(
+    cellIds: string[],
+    preprocessor?: (s: string) => string
+  ): Promise<{
+    height: number;
+    width: number;
+  } | null> {
+    if (!this.cells) return null;
+    const cells = this.cells.filter((c) => {
+      const found = cellIds.find((id) => id === c.id);
+      if (!found) {
+        console.warn(`Cell ${c.id} not found in notebook`);
+      }
+      return Boolean(found);
+    });
+
     const state = this.ctx.store.getState();
-    const { source } = state.thebe.cells[cellId];
-    const result = await cell?.execute(
-      kernelId,
-      preprocessor ? preprocessor(source) : source
-    );
-    if (!result) {
-      console.error(`Error executing cell ${cell.id}`);
-      return null;
+    let result = null;
+    for (let cell of cells) {
+      const { source } = state.thebe.cells[cell.id];
+      result = await cell.execute(preprocessor ? preprocessor(source) : source);
+      if (!result) {
+        console.error(`Error executing cell ${cell.id}`);
+        return null;
+      }
     }
     return result;
   }
 
-  async executeAll(
-    kernelId: string,
-    preprocessor?: (s: string) => string
-  ): Promise<{
+  async executeAll(preprocessor?: (s: string) => string): Promise<{
     height: number;
     width: number;
   } | null> {
@@ -140,10 +153,7 @@ class Notebook {
     let result = null;
     for (let cell of this.cells) {
       const { source } = state.thebe.cells[cell.id];
-      result = await cell.execute(
-        kernelId,
-        preprocessor ? preprocessor(source) : source
-      );
+      result = await cell.execute(preprocessor ? preprocessor(source) : source);
       if (!result) {
         console.error(`Error executing cell ${cell.id}`);
         return null;
