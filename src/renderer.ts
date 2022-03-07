@@ -50,6 +50,25 @@ class CellRenderer {
     );
   }
 
+  /**
+   * Wait for a kernel to be available and attach it to the cell
+   *
+   * NOTE: this function is intentended to be used when rendering a single cell only
+   * If you are using mulitple cells via Notebook, you should use Notebook.waitForKernel instead
+   *
+   * @param kernel - ThebeKernel
+   * @returns
+   */
+  async waitForKernel(kernel: Promise<ThebeKernel>) {
+    return kernel.then((k) => {
+      if (!k.connection) throw Error("kernel returned with no connection");
+      const cdnOnly = true;
+      const manager = new ThebeManager(k.connection, cdnOnly);
+      this.attachKernel(k.id, manager);
+      return k;
+    });
+  }
+
   attachKernel(kernelId: string, manager: ThebeManager) {
     this.rendermime.removeMimeType(WIDGET_MIMETYPE);
     if (this.rendermime) manager.addWidgetFactories(this.rendermime);

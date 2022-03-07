@@ -68,6 +68,13 @@ class Notebook {
     return this.cells[this.cells.length - 1];
   }
 
+  async waitForKernel(kernel: Promise<ThebeKernel>) {
+    return kernel.then((k) => {
+      this.attachKernel(k);
+      return k;
+    });
+  }
+
   attachKernel(kernel: ThebeKernel) {
     if (!kernel.connection) return;
     // TODO some tyeof redux.config hookup for
