@@ -5,11 +5,11 @@ import { Options } from "../types";
 import { ensureOptions } from "../options";
 import { nanoid } from "nanoid";
 import { getContext } from "../context";
+import { startJupyterLiteServer } from "../jlite";
 
 export function connect(options: Partial<Options>): Promise<ThebeKernel> {
-  if (options.useBinder) {
-    return connectToBinder(options);
-  }
+  if (options.useBinder) return connectToBinder(options);
+  if (options.useJupyterLite) return connectToJupyterLite(options);
   return connectToJupyter(options);
 }
 
@@ -23,6 +23,22 @@ export async function connectToBinder(
     server,
     opts.kernelOptions.name
   );
+}
+
+export async function connectToJupyterLite(
+  options: Partial<Options>
+): Promise<ThebeKernel> {
+  const opts = ensureOptions(options);
+  await startJupyterLiteServer();
+  const baseUrl = `${location.protocol}//${location.host}`;
+  console.debug(`thebe:api:connectToJupyterLite:baseUrl: ${baseUrl}`);
+  const server = await Server.connectToServer({
+    baseUrl,
+    token: "",
+    appendToken: false,
+  });
+  const kernel = new ThebeKernel(nanoid(), server.id);
+  return kernel.subscribeAndRequestKernelFromServer(server, "Pyolite");
 }
 
 export async function connectToJupyter(

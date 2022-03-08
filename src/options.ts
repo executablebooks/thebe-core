@@ -61,6 +61,7 @@ export function ensureOptions(options: Partial<Options>): Options {
 
   return {
     useBinder: true,
+    useJupyterLite: false,
     requestKernel: true,
     ...options,
     binderOptions,

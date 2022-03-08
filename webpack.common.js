@@ -55,6 +55,14 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /pypi\/.*/,
+        type: "asset/resource",
+      },
+      {
+        resourceQuery: /raw/,
+        type: "asset/source",
+      },
+      {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/,
@@ -66,6 +74,10 @@ module.exports = {
       {
         test: /\.(png|jpg|gif)$/,
         use: ["file-loader"],
+      },
+      {
+        test: /fontawesome-free.*\.(svg|eot|ttf|woff)$/,
+        loader: "ignore-loader",
       },
     ],
   },
