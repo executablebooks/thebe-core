@@ -9,6 +9,7 @@ export { default as Server } from "./server";
 export { default as ThebeKernel } from "./kernel";
 export { default as Notebook } from "./notebook";
 export { default as CellRenderer } from "./renderer";
+export { default as PassiveCellRenderer } from "./passive";
 
 export * from "./types";
 export * from "./context";

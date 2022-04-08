@@ -1,6 +1,5 @@
 import {
   RequestServerSettings,
-  BinderOptions,
   RepoProvider,
   ThebeContext,
   BasicServerSettings,

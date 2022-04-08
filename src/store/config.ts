@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SavedSessionOptions, MathjaxOptions } from "../types";
-import merge from "lodash.merge";
 import { State } from "./types";
 
 export type ConfigState = {
@@ -25,7 +24,7 @@ const config = createSlice({
     ) => {
       const { config } = action.payload;
       if (config === state) return state;
-      return merge(state, config);
+      return { ...state, ...config };
     },
   },
 });

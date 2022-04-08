@@ -1,35 +1,22 @@
-import { getRenderMimeRegistry } from "./rendermime";
-import { MathjaxOptions, ThebeContext } from "./types";
+import { ThebeContext } from "./types";
 import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
-import { Widget } from "@lumino/widgets";
 import { ThebeManager, WIDGET_MIMETYPE } from "./manager";
-import { RenderMimeRegistry } from "@jupyterlab/rendermime";
-import { WidgetRenderer } from "@jupyter-widgets/jupyterlab-manager";
 import ThebeKernel from "./kernel";
 import { actions, selectors } from "./store";
+import PassiveCellRenderer from "./passive";
 
-class CellRenderer {
+class CellRenderer extends PassiveCellRenderer {
   ctx: ThebeContext;
-  id: string;
   notebook: string;
 
-  rendermime: RenderMimeRegistry;
-  model: OutputAreaModel;
-  area: OutputArea;
-
   constructor(ctx: ThebeContext, id: string, notebook: string) {
+    const mathjax = selectors.config.selectMathjaxConfig(ctx.store.getState());
+
+    super(id, mathjax);
+
     this.ctx = ctx;
     this.id = id;
     this.notebook = notebook;
-
-    const mathjax = selectors.config.selectMathjaxConfig(ctx.store.getState());
-
-    this.rendermime = getRenderMimeRegistry(mathjax);
-    this.model = new OutputAreaModel({ trusted: true });
-    this.area = new OutputArea({
-      model: this.model,
-      rendermime: this.rendermime,
-    });
   }
 
   get isBusy() {
@@ -38,10 +25,6 @@ class CellRenderer {
         `[data-thebe-busy=c-${this.id}]`
       ) != null
     );
-  }
-
-  get isAttachedToDOM() {
-    return this.area.isAttached;
   }
 
   get isAttachedToKernel() {
@@ -80,51 +63,6 @@ class CellRenderer {
   detachKernel() {
     this.rendermime.removeMimeType(WIDGET_MIMETYPE);
     this.ctx.store.dispatch(actions.cells.detachKernel({ id: this.id }));
-  }
-
-  attachToDOM(el: HTMLElement) {
-    if (!this.area) return;
-    if (this.area.isAttached) return;
-    console.debug(`thebe:renderer:attach ${this.id}`);
-
-    // if the target element has contents, preserve it but wrap it in our output area
-    if (el.innerHTML) {
-      this.area.model.add({
-        output_type: "display_data",
-        data: {
-          "text/html": el.innerHTML,
-        },
-      });
-    }
-    el.textContent = "";
-
-    const div = document.createElement("div");
-    div.style.position = "relative";
-    div.className = "thebe-cell-renderer";
-    el.append(div);
-
-    Widget.attach(this.area, div);
-  }
-
-  setOutputText(text: string) {
-    if (!this.area) return;
-    this.area.model.clear(true);
-    this.area.model.add({
-      output_type: "stream",
-      name: "stdout",
-      text,
-    });
-  }
-
-  clearOnError(error: any) {
-    if (!this.area) return;
-    // could update redux with state here?
-    this.area.model.clear();
-    this.area.model.add({
-      output_type: "stream",
-      name: "stderr",
-      text: `Failed to execute. ${error} Please refresh the page.`,
-    });
   }
 
   renderBusy(show: boolean) {
