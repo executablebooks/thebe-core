@@ -1,6 +1,6 @@
 {
   "name": "thebe-core",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Typescript based core functionality for Thebe",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,9 +22,19 @@
   },
   "keywords": [
     "jupyter",
-    "executable",
-    "books"
+    "interactivity",
+    "jupyter-book"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/executablebooks/thebe-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/executablebooks/thebe-core/issues"
+  },
   "author": "Steve Purves",
   "license": "MIT",
   "devDependencies": {
