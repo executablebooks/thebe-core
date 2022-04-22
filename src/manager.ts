@@ -79,7 +79,6 @@ export class ThebeManager extends JupyterLabManager {
     view: Backbone.View<Backbone.Model>,
     options: any
   ): Promise<Widget> {
-    console.log("display_view", msg, view, options);
     if (options.el) {
       LuminoWidget.Widget.attach((view as any).pWidget, options.el);
     }

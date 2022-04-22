@@ -55,7 +55,6 @@ const attachKernel =
       return;
     }
     const notebook: Notebook = ctx.notebooks[notebookId];
-    console.log("hookupKernel", notebook, kernel);
     notebook.attachKernel(kernel);
     // consider storing current active kernelId on the notebook info
     // e.g. dispatch(notebooks.actions.setActiveKernelId(notebookId, kernelId));

@@ -60,6 +60,7 @@
     "@jupyter-widgets/controls": "^3.0.0",
     "@jupyter-widgets/html-manager": "^0.20.0",
     "@jupyter-widgets/jupyterlab-manager": "^3.0.1",
+    "@jupyterlab/javascript-extension": "^3.3.4",
     "@jupyterlab/mathjax2": "^3.2.9",
     "@jupyterlab/outputarea": "^3.2.9",
     "@jupyterlab/rendermime": "^3.2.9",

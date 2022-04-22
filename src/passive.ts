@@ -3,7 +3,6 @@ import { getRenderMimeRegistry } from "./rendermime";
 import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
 import { Widget } from "@lumino/widgets";
 import { RenderMimeRegistry } from "@jupyterlab/rendermime";
-import { selectors } from "./store";
 import { MathjaxOptions } from "./types";
 
 class PassiveCellRenderer {
@@ -80,7 +79,6 @@ class PassiveCellRenderer {
    * @returns
    */
   render(outputs: nbformat.IOutput[]) {
-    console.log("render", outputs);
     this.model.fromJSON(outputs);
   }
 }
