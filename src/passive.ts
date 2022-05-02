@@ -2,7 +2,7 @@ import * as nbformat from "@jupyterlab/nbformat";
 import { getRenderMimeRegistry } from "./rendermime";
 import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
 import { Widget } from "@lumino/widgets";
-import { RenderMimeRegistry } from "@jupyterlab/rendermime";
+import { IRenderMime, RenderMimeRegistry } from "@jupyterlab/rendermime";
 import { MathjaxOptions } from "./types";
 
 class PassiveCellRenderer {
@@ -25,6 +25,10 @@ class PassiveCellRenderer {
 
   get isAttachedToDOM() {
     return this.area.isAttached;
+  }
+
+  addFactory(factory: IRenderMime.IRendererFactory, rank?: number) {
+    this.rendermime.addFactory(factory, rank);
   }
 
   attachToDOM(el: HTMLElement) {
