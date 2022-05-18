@@ -24,10 +24,7 @@
       async
       src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
     />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@curvenote/article/dist/curvenote.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/@curvenote/article/dist/curvenote.css" />
     <script src="https://unpkg.com/@curvenote/article"></script>
     <style>
       body {
@@ -46,12 +43,12 @@
   <body>
     <h1>Demo: thebe-core</h1>
     <p>
-      This is a demonstration of <em>thebe-core</em> executing an sequence of
-      code cells via the Notebook interface
+      This is a demonstration of <em>thebe-core</em> executing an sequence of code cells via the
+      Notebook interface
     </p>
     <p>
-      The code itself is in 3 cells as follows, but here it is actually injectes
-      via javascript, rather than picked up from the page.
+      The code itself is in 3 cells as follows, but here it is actually injectes via javascript,
+      rather than picked up from the page.
     </p>
     <pre>
 %matplotlib inline
@@ -72,8 +69,8 @@ ax.plot(x,y);
 plt.grid(True)</pre
     >
     <p>
-      The page immediately requests a kernel and the kernel status can be
-      monitors via a redux subscription.
+      The page immediately requests a kernel and the kernel status can be monitors via a redux
+      subscription.
     </p>
     <p>
       Current server status is
@@ -87,11 +84,7 @@ plt.grid(True)</pre
     <div data-output="true">
       <img src="/output.png" />
     </div>
-    <button
-      id="reset"
-      title="removes servers/kernels and force binder to rebuild"
-      disabled
-    >
+    <button id="reset" title="removes servers/kernels and force binder to rebuild" disabled>
       hard reset
     </button>
     <script src="/demo-basic-observe.js"></script>
@@ -100,13 +93,6 @@ plt.grid(True)</pre
         useBinder: false,
         useJupyterLite: true,
         requestKernel: true,
-        binderOptions: {
-          repo: "binder-examples/requirements",
-          ref: "master",
-        },
-        kernelOptions: {
-          name: "python3",
-        },
       };
 
       const code = [
@@ -132,10 +118,10 @@ plt.grid(True)</pre
         `,
       ];
 
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener('DOMContentLoaded', function () {
         function randomId() {
           const uint32 = window.crypto.getRandomValues(new Uint32Array(1))[0];
-          return "id-" + uint32.toString(16);
+          return 'id-' + uint32.toString(16);
         }
 
         window.demo = { notebook: null, kernel: null };
@@ -149,22 +135,22 @@ plt.grid(True)</pre
           }))
         );
 
-        const runAllButton = document.getElementById("run-all");
+        const runAllButton = document.getElementById('run-all');
         runAllButton.onclick = (ev) => {
           window.demo.notebook.executeAll();
         };
 
-        const runLastButton = document.getElementById("run-last");
+        const runLastButton = document.getElementById('run-last');
         runLastButton.onclick = (ev) => {
           window.demo.notebook.executeOnly(window.demo.notebook.lastCell().id);
         };
 
-        const restartButton = document.getElementById("restart");
+        const restartButton = document.getElementById('restart');
         restartButton.onclick = (ev) => {
           window.thebeCore.api.restartKernel(demo.kernelId);
         };
 
-        const resetButton = document.getElementById("reset");
+        const resetButton = document.getElementById('reset');
         resetButton.onclick = (ev) => {
           window.thebeCore.api.clear();
           window.location.reload();
@@ -172,16 +158,16 @@ plt.grid(True)</pre
 
         kernel.then((kernel) => {
           const dispose = kernel.listen((info) => {
-            const serverStatus = document.getElementById("server-status");
-            serverStatus.innerText = info.server ? info.server.status : "none";
-            const kernelStatus = document.getElementById("kernel-status");
-            kernelStatus.innerText = info.kernel ? info.kernel.status : "none";
+            const serverStatus = document.getElementById('server-status');
+            serverStatus.innerText = info.server ? info.server.status : 'none';
+            const kernelStatus = document.getElementById('kernel-status');
+            kernelStatus.innerText = info.kernel ? info.kernel.status : 'none';
 
-            if (info.kernel && info.kernel.status === "ready") {
-              document.getElementById("run-all").disabled = false;
-              document.getElementById("run-last").disabled = false;
-              document.getElementById("restart").disabled = false;
-              document.getElementById("reset").disabled = false;
+            if (info.kernel && info.kernel.status === 'ready') {
+              document.getElementById('run-all').disabled = false;
+              document.getElementById('run-last').disabled = false;
+              document.getElementById('restart').disabled = false;
+              document.getElementById('reset').disabled = false;
               dispose();
             }
           });

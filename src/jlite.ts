@@ -42,5 +42,5 @@ export async function startJupyterLiteServer() {
   // start the server
   await jupyterLiteServer.start();
 
-  return serviceManager.serverSettings;
+  return serviceManager;
 }

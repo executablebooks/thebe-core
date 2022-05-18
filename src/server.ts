@@ -4,25 +4,17 @@ import {
   ThebeContext,
   BasicServerSettings,
   BinderRequestOptions,
-} from "./types";
-import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from "./url";
-import servers, { ServerInfo, ServerStatus } from "./store/servers";
-import { nanoid } from "nanoid";
+} from './types';
+import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from './url';
+import servers, { ServerInfo, ServerStatus } from './store/servers';
+import { nanoid } from 'nanoid';
 
-import {
-  getExistingServer,
-  removeServerInfo,
-  saveServerInfo,
-} from "./sessions";
-import kernels from "./store/kernels";
-import {
-  KernelManager,
-  KernelSpecAPI,
-  ServerConnection,
-} from "@jupyterlab/services";
-import { ensureBinderOptions } from "./options";
-import { getContext } from "./context";
-import { actions } from "./store";
+import { getExistingServer, removeServerInfo, saveServerInfo } from './sessions';
+import kernels from './store/kernels';
+import { KernelManager, KernelSpecAPI, ServerConnection } from '@jupyterlab/services';
+import { ensureBinderOptions } from './options';
+import { getContext } from './context';
+import { actions } from './store';
 
 class Server {
   id: string;
@@ -55,23 +47,16 @@ class Server {
     const state = ctx.store.getState();
 
     const server = state.thebe.servers[serverId];
-    if (!server.settings)
-      throw Error("No server settings cannot fetchKernelNames");
-    const specs = await KernelSpecAPI.getSpecs(
-      ServerConnection.makeSettings(server.settings)
-    );
-    ctx.store.dispatch(
-      actions.servers.updateSpecs({ id: serverId, specs: specs })
-    );
+    if (!server.settings) throw Error('No server settings cannot fetchKernelNames');
+    const specs = await KernelSpecAPI.getSpecs(ServerConnection.makeSettings(server.settings));
+    ctx.store.dispatch(actions.servers.updateSpecs({ id: serverId, specs: specs }));
   }
 
   // TODO ThunkAction
   static async clearAllServers() {
     const ctx = getContext();
     const state = ctx.store.getState();
-    Object.keys(state.thebe.servers).map((id: string) =>
-      removeServerInfo(ctx, id)
-    );
+    Object.keys(state.thebe.servers).map((id: string) => removeServerInfo(ctx, id));
     ctx.store.dispatch(servers.actions.clear());
     ctx.store.dispatch(kernels.actions.clear());
   }
@@ -84,14 +69,13 @@ class Server {
    * @param opts
    * @returns
    */
-  static async connectToServer(
-    requestSettings: RequestServerSettings
-  ): Promise<Server> {
+  static async connectToServer(requestSettings: RequestServerSettings): Promise<Server> {
     const ctx = getContext();
     const { dispatch } = ctx.store;
     const id = nanoid();
     try {
       const serverSettings = ServerConnection.makeSettings(requestSettings);
+      console.debug('thebe:api:connectToServer:serverSettings:', serverSettings);
       let km = new KernelManager({ serverSettings });
       dispatch(
         servers.actions.opened({
@@ -124,17 +108,12 @@ class Server {
    * @param opts
    * @returns
    */
-  static async connectToServerViaBinder(
-    options: Partial<BinderRequestOptions>
-  ): Promise<Server> {
+  static async connectToServerViaBinder(options: Partial<BinderRequestOptions>): Promise<Server> {
     const ctx = getContext();
     const state = ctx.store.getState();
     const { sessionSaving } = state.thebe.config;
     const opts = ensureBinderOptions(options);
-    console.debug(
-      "thebe:server:connectToServerViaBinder binderUrl:",
-      opts.binderUrl
-    );
+    console.debug('thebe:server:connectToServerViaBinder binderUrl:', opts.binderUrl);
 
     let url: string;
     switch (opts.repoProvider) {
@@ -149,15 +128,10 @@ class Server {
         url = makeGitHubUrl(opts);
         break;
     }
-    console.debug(
-      "thebe:server:connectToServerViaBinder Binder build URL:",
-      url
-    );
+    console.debug('thebe:server:connectToServerViaBinder Binder build URL:', url);
 
     if (sessionSaving.enabled) {
-      console.debug(
-        "thebe:server:connectToServerViaBinder Checking for saved session..."
-      );
+      console.debug('thebe:server:connectToServerViaBinder Checking for saved session...');
       const existing = await getExistingServer(ctx, url);
       if (existing) return new Server(ctx, existing.id);
     }
@@ -196,9 +170,9 @@ class Server {
         token: string;
       } = JSON.parse(evt.data);
 
-      const phase = msg.phase?.toLowerCase() ?? "";
+      const phase = msg.phase?.toLowerCase() ?? '';
       switch (phase) {
-        case "failed":
+        case 'failed':
           es?.close();
           ctx.store.dispatch(
             servers.actions.error({
@@ -207,12 +181,12 @@ class Server {
             })
           );
           break;
-        case "ready":
+        case 'ready':
           es?.close();
 
           const settings: BasicServerSettings = {
             baseUrl: msg.url,
-            wsUrl: "ws" + msg.url.slice(4),
+            wsUrl: 'ws' + msg.url.slice(4),
             token: msg.token,
             appendToken: true,
           };
