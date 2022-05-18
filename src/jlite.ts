@@ -1,8 +1,8 @@
-import { JupyterLiteServer } from "@jupyterlite/server";
+import { JupyterLiteServer } from '@jupyterlite/server';
 
 const serverExtensions = [
-  import("@jupyterlite/pyolite-kernel-extension"),
-  import("@jupyterlite/server-extension"),
+  import('@jupyterlite/pyolite-kernel-extension'),
+  import('@jupyterlite/server-extension'),
 ];
 
 export async function startJupyterLiteServer() {
@@ -14,7 +14,7 @@ export async function startJupyterLiteServer() {
   function* activePlugins(extension: any) {
     // Handle commonjs or es2015 modules
     let exports;
-    if (extension.hasOwnProperty("__esModule")) {
+    if (extension.hasOwnProperty('__esModule')) {
       exports = extension.default;
     } else {
       // CommonJS exports.
@@ -37,7 +37,10 @@ export async function startJupyterLiteServer() {
 
   // create the in-browser JupyterLite Server
   const jupyterLiteServer = new JupyterLiteServer({} as any);
+  const { serviceManager } = jupyterLiteServer;
   jupyterLiteServer.registerPluginModules(litePluginsToRegister);
   // start the server
   await jupyterLiteServer.start();
+
+  return serviceManager.serverSettings;
 }
