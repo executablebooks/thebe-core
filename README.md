@@ -32,7 +32,7 @@ This will serve example pages from `/demo` containing minimal working examples o
 The `local.html` example requires a local kernel, start jupyter with the following command to start a server that the demo can connect to.
 
 ```
-  jupyter notebook --NotebookApp.tioken=test-secret --NotebookApp.allow_origin="*"
+  jupyter notebook --NotebookApp.token=test-secret --NotebookApp.allow_origin="*"
 ```
 
 To create a full build, with both typescript module and webpack bundle run:

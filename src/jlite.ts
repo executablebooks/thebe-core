@@ -35,12 +35,16 @@ export async function startJupyterLiteServer() {
     }
   });
 
+  console.log('litePluginsToRegister', litePluginsToRegister);
+
   // create the in-browser JupyterLite Server
   const jupyterLiteServer = new JupyterLiteServer({} as any);
-  const { serviceManager } = jupyterLiteServer;
   jupyterLiteServer.registerPluginModules(litePluginsToRegister);
   // start the server
   await jupyterLiteServer.start();
+
+  const { serviceManager } = jupyterLiteServer;
+  await serviceManager.ready;
 
   return serviceManager;
 }

@@ -24,16 +24,19 @@ export async function connectToJupyterLite(options: Partial<Options>): Promise<T
   console.debug(`thebe:api:connectToJupyterLite`, options);
   const opts = ensureOptions(options);
   const serviceManager = await startJupyterLiteServer();
+
   // TODO it is not enough to just use the server settings, we need to use the
   // "fetch-patched" serverManager in the thebe client
-  const server = await Server.connectToServer(serviceManager.serverSettings);
+  const server = await Server.connectToJupyterLiteServer(serviceManager);
+  
   const kernel = new ThebeKernel(nanoid(), server.id);
-  return kernel.subscribeAndRequestKernelFromServer(server, 'Pyolite');
+  // return kernel.subscribeAndRequestKernelFromServer(server, 'Pyolite');
+  return kernel;
 }
 
 export async function connectToJupyter(options: Partial<Options>): Promise<ThebeKernel> {
   const opts = ensureOptions(options);
-  const server = await Server.connectToServer(opts.kernelOptions.serverSettings);
+  const server = await Server.connectToJupyterServer(opts.kernelOptions.serverSettings);
   const kernel = new ThebeKernel(nanoid(), server.id);
   return kernel.subscribeAndRequestKernelFromServer(server, opts.kernelOptions.name);
 }

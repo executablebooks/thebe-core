@@ -11,7 +11,12 @@ import { nanoid } from 'nanoid';
 
 import { getExistingServer, removeServerInfo, saveServerInfo } from './sessions';
 import kernels from './store/kernels';
-import { KernelManager, KernelSpecAPI, ServerConnection } from '@jupyterlab/services';
+import {
+  KernelManager,
+  KernelSpecAPI,
+  ServerConnection,
+  ServiceManager,
+} from '@jupyterlab/services';
 import { ensureBinderOptions } from './options';
 import { getContext } from './context';
 import { actions } from './store';
@@ -69,13 +74,20 @@ class Server {
    * @param opts
    * @returns
    */
-  static async connectToServer(requestSettings: RequestServerSettings): Promise<Server> {
+  static async connectToJupyterServer(requestSettings: RequestServerSettings): Promise<Server> {
+    /**
+     *     this.sessions = new SessionManager({
+      ...{ serverSettings, standby },
+      kernelManager: kernelManager
+    });
+     */
+
     const ctx = getContext();
     const { dispatch } = ctx.store;
     const id = nanoid();
     try {
       const serverSettings = ServerConnection.makeSettings(requestSettings);
-      console.debug('thebe:api:connectToServer:serverSettings:', serverSettings);
+      console.debug('thebe:api:connectToJupyterServer:serverSettings:', serverSettings);
       let km = new KernelManager({ serverSettings });
       dispatch(
         servers.actions.opened({
@@ -87,6 +99,63 @@ class Server {
       await km.ready;
 
       const { baseUrl, wsUrl, token, appendToken } = serverSettings;
+      ctx.store.dispatch(
+        servers.actions.ready({
+          id,
+          settings: { baseUrl, wsUrl, token, appendToken },
+          message: `Server is ready: ${baseUrl}`,
+        })
+      );
+    } catch (err) {}
+
+    return new Server(ctx, id);
+  }
+
+  /**
+   * Connect to Jupyterlite Server
+   *
+   */
+  static async connectToJupyterLiteServer(serviceManager: ServiceManager): Promise<Server> {
+    const ctx = getContext();
+    const { dispatch } = ctx.store;
+    const id = nanoid();
+    try {
+      console.debug(
+        'thebe:api:connectToJupyterLiteServer:serverSettings:',
+        serviceManager.serverSettings
+      );
+
+      dispatch(
+        servers.actions.opened({
+          id,
+          url: serviceManager.serverSettings.baseUrl,
+          message: `Requesting direct server connection to ${serviceManager.serverSettings.baseUrl}`,
+        })
+      );
+
+      const sessionManager = serviceManager.sessions;
+      await sessionManager.ready;
+      const connection = await sessionManager.startNew({
+        name: 'python',
+        path: 'any.ipynb',
+        type: 'notebook',
+        kernel: {
+          name: 'python',
+        },
+      });
+      const future = connection.kernel!.requestExecute({ code: 'print("Hello World")' });
+
+      console.log('future', future);
+      future.onReply = (reply: any) => {
+        console.log(`Got execute reply with status ${JSON.stringify(reply.content, null, 2)}`);
+      };
+      future.onIOPub = (reply: any) => {
+        console.log(reply);
+      };
+      await future.done;
+      console.log('future done');
+
+      const { baseUrl, wsUrl, token, appendToken } = serviceManager.serverSettings;
       ctx.store.dispatch(
         servers.actions.ready({
           id,
