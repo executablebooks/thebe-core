@@ -45,6 +45,11 @@ module.exports = {
       title: 'thebe-core-demo-kernels',
       template: 'demo/demo-kernels.html',
     }),
+    new HtmlWebpackPlugin({
+      filename: 'demo-lite.html',
+      title: 'thebe-core-demo-lite',
+      template: 'demo/demo-lite.html',
+    }),
     new DefinePlugin({ 'process.env': {} }),
   ],
   output: {

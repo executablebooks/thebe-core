@@ -34,8 +34,34 @@
   </head>
   <body>
     <h1>Demo: thebe-core</h1>
-    <p>This is a demonstration of <em>thebe-core</em> starting up and connecting</p>
+    <p>
+      This is a demonstration of <em>thebe-core</em> starting up and connecting to a jupyterlite
+      server
+    </p>
     <p />
+    <pre>
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+</pre
+    >
+    <pre>
+mu = 5
+sigma = 5</pre
+    >
+    <pre>
+plt.ion()
+fig, ax = plt.subplots()
+x = np.arange(-10,10,0.1)
+y = stats.norm.pdf(x, mu, sigma)
+ax.plot(x,y);
+plt.grid(True)</pre
+    >
+    <button id="run-all" disabled>run all</button>
+    <button id="run-last" disabled>run last</button>
+    <button id="restart" disabled>restart</button>
+    <div data-output="true"></div>
     <script>
       const options = {
         useBinder: false,
@@ -80,34 +106,32 @@
         last.attachToDOM(document.querySelector('[data-output]'));
         const { server, session } = await thebeCore.api.connect(options);
 
+        await server.ready;
         await session.ready;
-
+        console.log('Session ready');
         notebook.attachSession(session);
+
+        const runAllButton = document.getElementById('run-all');
+        runAllButton.onclick = (ev) => {
+          notebook.executeAll();
+        };
+        runAllButton.disabled = false;
+
+        const runLastButton = document.getElementById('run-last');
+        runLastButton.onclick = (ev) => {
+          notebook.executeOnly(notebook.lastCell().id);
+        };
+        runLastButton.disabled = false;
+
+        const restartButton = document.getElementById('restart');
+        restartButton.onclick = (ev) => {
+          session.restart();
+        };
+        restartButton.disabled = false;
 
         const future = session.kernel.requestExecute({ code: 'print("Hello World!")' });
 
         await future.done;
-
-        // const runAllButton = document.getElementById('run-all');
-        // runAllButton.onclick = (ev) => {
-        //   window.demo.notebook.executeAll();
-        // };
-
-        // const runLastButton = document.getElementById('run-last');
-        // runLastButton.onclick = (ev) => {
-        //   window.demo.notebook.executeOnly(window.demo.notebook.lastCell().id);
-        // };
-
-        // const restartButton = document.getElementById('restart');
-        // restartButton.onclick = (ev) => {
-        //   window.thebeCore.api.restartKernel(demo.kernelId);
-        // };
-
-        // const resetButton = document.getElementById('reset');
-        // resetButton.onclick = (ev) => {
-        //   window.thebeCore.api.clear();
-        //   window.location.reload();
-        // };
       });
     </script>
   </body>

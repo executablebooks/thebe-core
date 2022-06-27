@@ -1,0 +1,39 @@
+import { nanoid, Store, Unsubscribe } from '@reduxjs/toolkit';
+import { KernelOptions, Options, ThebeContext } from './types';
+import { Kernel, KernelManager, ServerConnection, Session } from '@jupyterlab/services';
+import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
+import ThebeServer from './server';
+import { ISessionConnection } from '@jupyterlab/services/lib/session/session';
+
+class ThebeSession {
+  id: string;
+  // see https://github.dev/jupyterlab/jupyterlab/blob/d48e0c04efb786561137fb20773fc15788507f0a/packages/logconsole/src/widget.ts line 43
+  _connection?: ISessionConnection;
+
+  constructor(id: string, connection: Session.ISessionConnection) {
+    this.id = id;
+    this._connection = connection;
+  }
+
+  get session() {
+    return this._connection;
+  }
+
+  get kernel() {
+    return this._connection?.kernel;
+  }
+
+  async restart() {
+    if (!this._connection) {
+      console.error(`Trying to restart kernel with no connection`);
+      return;
+    }
+    console.debug(`requesting restart for kernel ${this.id}`);
+    await this._connection.kernel!.restart();
+  }
+
+  async refresh() {}
+  async dispose() {}
+}
+
+export default ThebeSession;

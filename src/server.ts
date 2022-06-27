@@ -1,174 +1,147 @@
 import {
   RequestServerSettings,
   RepoProvider,
-  ThebeContext,
   BasicServerSettings,
-  BinderRequestOptions,
+  Options,
+  KernelOptions,
 } from './types';
 import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from './url';
-import servers, { ServerInfo, ServerStatus } from './store/servers';
 import { nanoid } from 'nanoid';
-
-import { getExistingServer, removeServerInfo, saveServerInfo } from './sessions';
-import kernels from './store/kernels';
+import { getExistingServer, makeStorageKey, removeServerInfo, saveServerInfo } from './sessions';
 import {
   KernelManager,
   KernelSpecAPI,
   ServerConnection,
   ServiceManager,
+  SessionManager,
 } from '@jupyterlab/services';
-import { ensureBinderOptions } from './options';
-import { getContext } from './context';
-import { actions } from './store';
+import ThebeSession from './session';
 
-class Server {
+type LogCallback = ({ id, message }: { id: string; message: string }) => void;
+
+class ThebeServer {
   id: string;
-  ctx: ThebeContext;
-  es: EventSource | null;
+  sessionManager: SessionManager | undefined;
+  _ready: Promise<void>;
 
-  constructor(ctx: ThebeContext, id: string) {
+  constructor(id: string, sessionManager: SessionManager) {
     this.id = id;
-    this.ctx = ctx;
-    this.es = null;
+    this.sessionManager = sessionManager;
+    this._ready = this.sessionManager.ready;
   }
 
-  // TODO Selectors
-
-  get(): ServerInfo {
-    return this.ctx.store.getState().thebe.servers[this.id];
+  get ready() {
+    return this._ready;
   }
 
   isReady(): boolean {
-    return this.get().status === ServerStatus.ready;
+    return this.sessionManager?.isReady ?? false;
   }
 
   get settings() {
-    return this.get().settings;
+    return this.sessionManager?.serverSettings;
+  }
+
+  async requestSession(kernelOptions: Omit<KernelOptions, 'serverSettings'>) {
+    if (!this.sessionManager)
+      throw Error('Requesting session from a server, with no SessionManager available');
+    const connection = await this.sessionManager?.startNew({
+      name: kernelOptions.name,
+      path: kernelOptions.path,
+      type: 'notebook',
+      kernel: {
+        name: kernelOptions.kernelName ?? kernelOptions.name,
+      },
+    });
+    return new ThebeSession(nanoid(), connection);
   }
 
   // TODO ThunkAction
-  static async fetchKernelNames(serverId: string) {
-    const ctx = getContext();
-    const state = ctx.store.getState();
-
-    const server = state.thebe.servers[serverId];
-    if (!server.settings) throw Error('No server settings cannot fetchKernelNames');
-    const specs = await KernelSpecAPI.getSpecs(ServerConnection.makeSettings(server.settings));
-    ctx.store.dispatch(actions.servers.updateSpecs({ id: serverId, specs: specs }));
+  async fetchKernelNames() {
+    if (!this.sessionManager) return { default: 'python', kernelSpecs: {} };
+    return KernelSpecAPI.getSpecs(
+      ServerConnection.makeSettings(this.sessionManager.serverSettings)
+    );
   }
 
-  // TODO ThunkAction
-  static async clearAllServers() {
-    const ctx = getContext();
-    const state = ctx.store.getState();
-    Object.keys(state.thebe.servers).map((id: string) => removeServerInfo(ctx, id));
-    ctx.store.dispatch(servers.actions.clear());
-    ctx.store.dispatch(kernels.actions.clear());
+  async clear(options: Options) {
+    const url = this.sessionManager?.serverSettings?.baseUrl;
+    if (url)
+      window.localStorage.removeItem(
+        makeStorageKey(options.binderOptions.savedSession.storagePrefix, url)
+      );
   }
 
-  // TODO ThunkAction
   /**
    * Connect to a Jupyter server directly
    *
-   * @param ctx
-   * @param opts
-   * @returns
    */
-  static async connectToJupyterServer(requestSettings: RequestServerSettings): Promise<Server> {
-    /**
-     *     this.sessions = new SessionManager({
-      ...{ serverSettings, standby },
-      kernelManager: kernelManager
-    });
-     */
-
-    const ctx = getContext();
-    const { dispatch } = ctx.store;
+  static async connectToJupyterServer(
+    requestSettings: RequestServerSettings,
+    log?: LogCallback
+  ): Promise<ThebeServer> {
     const id = nanoid();
-    try {
-      const serverSettings = ServerConnection.makeSettings(requestSettings);
-      console.debug('thebe:api:connectToJupyterServer:serverSettings:', serverSettings);
-      let km = new KernelManager({ serverSettings });
-      dispatch(
-        servers.actions.opened({
-          id,
-          url: requestSettings.baseUrl,
-          message: `Requesting direct server connection to ${requestSettings.baseUrl}`,
-        })
-      );
-      await km.ready;
+    const serverSettings = ServerConnection.makeSettings(requestSettings);
+    console.debug('thebe:api:connectToJupyterServer:serverSettings:', serverSettings);
 
-      const { baseUrl, wsUrl, token, appendToken } = serverSettings;
-      ctx.store.dispatch(
-        servers.actions.ready({
-          id,
-          settings: { baseUrl, wsUrl, token, appendToken },
-          message: `Server is ready: ${baseUrl}`,
-        })
-      );
-    } catch (err) {}
+    let kernelManager = new KernelManager({ serverSettings });
+    log?.({
+      id,
+      message: `Created KernelManager: ${requestSettings.baseUrl}`,
+    });
 
-    return new Server(ctx, id);
+    const sessionManager = new SessionManager({ kernelManager });
+    log?.({
+      id,
+      message: `Created SessionMananger: ${serverSettings.baseUrl}`,
+    });
+
+    return new ThebeServer(id, sessionManager);
   }
 
   /**
    * Connect to Jupyterlite Server
    *
    */
-  static async connectToJupyterLiteServer(serviceManager: ServiceManager): Promise<Server> {
-    const ctx = getContext();
-    const { dispatch } = ctx.store;
+  static async connectToJupyterLiteServer(
+    serviceManager: ServiceManager,
+    log?: LogCallback
+  ): Promise<ThebeServer> {
     const id = nanoid();
-    try {
-      console.debug(
-        'thebe:api:connectToJupyterLiteServer:serverSettings:',
-        serviceManager.serverSettings
-      );
+    console.debug(
+      'thebe:api:connectToJupyterLiteServer:serverSettings:',
+      serviceManager.serverSettings
+    );
 
-      dispatch(
-        servers.actions.opened({
-          id,
-          url: serviceManager.serverSettings.baseUrl,
-          message: `Requesting direct server connection to ${serviceManager.serverSettings.baseUrl}`,
-        })
-      );
+    const sessionManager = serviceManager.sessions;
+    log?.({
+      id,
+      message: `Received SessionMananger from JupyterLite`,
+    });
 
-      const sessionManager = serviceManager.sessions;
-      await sessionManager.ready;
-      const connection = await sessionManager.startNew({
-        name: 'python',
-        path: 'any.ipynb',
-        type: 'notebook',
-        kernel: {
-          name: 'python',
-        },
-      });
-      const future = connection.kernel!.requestExecute({ code: 'print("Hello World")' });
+    // const connection = await sessionManager.startNew({
+    //   name: 'python',
+    //   path: 'any.ipynb',
+    //   type: 'notebook',
+    //   kernel: {
+    //     name: 'python',
+    //   },
+    // });
+    // const future = connection.kernel!.requestExecute({ code: 'print("Hello World")' });
 
-      console.log('future', future);
-      future.onReply = (reply: any) => {
-        console.log(`Got execute reply with status ${JSON.stringify(reply.content, null, 2)}`);
-      };
-      future.onIOPub = (reply: any) => {
-        console.log(reply);
-      };
-      await future.done;
-      console.log('future done');
+    // console.log('future', future);
+    // future.onReply = (reply: any) => {
+    //   console.log(`Got execute reply with status ${JSON.stringify(reply.content, null, 2)}`);
+    // };
+    // future.onIOPub = (reply: any) => {
+    //   console.log(reply);
+    // };
+    // await future.done;
+    // console.log('future done');
 
-      const { baseUrl, wsUrl, token, appendToken } = serviceManager.serverSettings;
-      ctx.store.dispatch(
-        servers.actions.ready({
-          id,
-          settings: { baseUrl, wsUrl, token, appendToken },
-          message: `Server is ready: ${baseUrl}`,
-        })
-      );
-    } catch (err) {}
-
-    return new Server(ctx, id);
+    return new ThebeServer(id, sessionManager);
   }
 
-  // TODO ThunkAction
   /**
    * Connect to a Binder instance in order to
    * access a Jupyter server that can provide kernels
@@ -177,117 +150,105 @@ class Server {
    * @param opts
    * @returns
    */
-  static async connectToServerViaBinder(options: Partial<BinderRequestOptions>): Promise<Server> {
-    const ctx = getContext();
-    const state = ctx.store.getState();
-    const { sessionSaving } = state.thebe.config;
-    const opts = ensureBinderOptions(options);
-    console.debug('thebe:server:connectToServerViaBinder binderUrl:', opts.binderUrl);
+  static async connectToServerViaBinder(options: Options, log?: LogCallback): Promise<ThebeServer> {
+    const { binderOptions } = options;
+    console.debug('thebe:server:connectToServerViaBinder binderUrl:', binderOptions.binderUrl);
 
     let url: string;
-    switch (opts.repoProvider) {
+    switch (binderOptions.repoProvider) {
       case RepoProvider.git:
-        url = makeGitUrl(opts);
+        url = makeGitUrl(binderOptions);
         break;
       case RepoProvider.gitlab:
-        url = makeGitLabUrl(opts);
+        url = makeGitLabUrl(binderOptions);
         break;
       case RepoProvider.github:
       default:
-        url = makeGitHubUrl(opts);
+        url = makeGitHubUrl(binderOptions);
         break;
     }
     console.debug('thebe:server:connectToServerViaBinder Binder build URL:', url);
 
-    if (sessionSaving.enabled) {
+    if (binderOptions.savedSession.enabled) {
       console.debug('thebe:server:connectToServerViaBinder Checking for saved session...');
-      const existing = await getExistingServer(ctx, url);
-      if (existing) return new Server(ctx, existing.id);
+      const existing = await getExistingServer(binderOptions, url);
+      if (existing) {
+        const { id, settings } = existing;
+        if (settings) {
+          let kernelManager = new KernelManager({
+            serverSettings: ServerConnection.makeSettings(settings),
+          });
+          const sessionManager = new SessionManager({ kernelManager });
+          return new ThebeServer(existing.id, sessionManager);
+        }
+      }
     }
 
     // request new server
     const id = nanoid();
 
-    // Talk to the binder server
-    const es = new EventSource(url);
-    ctx.store.dispatch(
-      servers.actions.opened({
-        id,
-        url,
-        message: `Opened connection to binder: ${url}`,
-      })
-    );
+    return new Promise((resolve, reject) => {
+      // Talk to the binder server
+      const es = new EventSource(url);
+      log?.({ id, message: `Opened connection to binder: ${url}` });
 
-    // handle errors
-    es.onerror = (evt: Event) => {
-      console.error(`Lost connection to binder: ${url}`, evt);
-      es?.close();
-      ctx.store.dispatch(
-        servers.actions.error({
-          id,
-          message: (evt as MessageEvent)?.data,
-        })
-      );
-    };
+      // handle errors
+      es.onerror = (evt: Event) => {
+        console.error(`Lost connection to binder: ${url}`, evt);
+        es?.close();
+        log?.({ id, message: (evt as MessageEvent)?.data });
+      };
 
-    es.onmessage = async (evt: MessageEvent<string>) => {
-      const msg: {
-        // TODO must be in Jupyterlab types somewhere
-        phase: string;
-        message: string;
-        url: string;
-        token: string;
-      } = JSON.parse(evt.data);
+      es.onmessage = async (evt: MessageEvent<string>) => {
+        const msg: {
+          // TODO must be in Jupyterlab types somewhere
+          phase: string;
+          message: string;
+          url: string;
+          token: string;
+        } = JSON.parse(evt.data);
 
-      const phase = msg.phase?.toLowerCase() ?? '';
-      switch (phase) {
-        case 'failed':
-          es?.close();
-          ctx.store.dispatch(
-            servers.actions.error({
-              id,
-              message: `Binder: failed to build - ${url} - ${msg.message}`,
-            })
-          );
-          break;
-        case 'ready':
-          es?.close();
+        const phase = msg.phase?.toLowerCase() ?? '';
+        switch (phase) {
+          case 'failed':
+            es?.close();
+            log?.({ id, message: `Binder: failed to build - ${url} - ${msg.message}` });
+            break;
+          case 'ready': {
+            es?.close();
 
-          const settings: BasicServerSettings = {
-            baseUrl: msg.url,
-            wsUrl: 'ws' + msg.url.slice(4),
-            token: msg.token,
-            appendToken: true,
-          };
+            const settings: BasicServerSettings = {
+              baseUrl: msg.url,
+              wsUrl: 'ws' + msg.url.slice(4),
+              token: msg.token,
+              appendToken: true,
+            };
 
-          ctx.store.dispatch(
-            servers.actions.ready({
-              id,
-              settings,
-              message: `Server from Binder is ready: ${msg.message}`,
-            })
-          );
+            let kernelManager = new KernelManager({
+              serverSettings: ServerConnection.makeSettings(settings),
+            });
+            const sessionManager = new SessionManager({ kernelManager });
 
-          if (sessionSaving.enabled) {
-            saveServerInfo(ctx, id);
-            console.debug(
-              `thebe:server:connectToServerViaBinder Saved session for ${id} at ${url}`
-            );
+            log?.({ id, message: `Server from Binder is ready: ${msg.message}` });
+
+            if (binderOptions.savedSession.enabled) {
+              saveServerInfo(binderOptions.savedSession, url, settings);
+              console.debug(
+                `thebe:server:connectToServerViaBinder Saved session for ${id} at ${url}`
+              );
+            }
+
+            resolve(new ThebeServer(id, sessionManager));
           }
-          break;
-        default:
-          ctx.store.dispatch(
-            servers.actions.message({
+          default:
+            log?.({
               id,
-              status: ServerStatus.launching,
               message: `Binder is: ${phase} - ${msg.message}`,
-            })
-          );
-      }
-    };
-
-    return new Server(ctx, id);
+            });
+        }
+      };
+    });
   }
 }
 
-export default Server;
+export default ThebeServer;

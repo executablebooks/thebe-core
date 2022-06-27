@@ -4,6 +4,7 @@ function bootstrap(scope, options, blocks) {
   const last = scope.notebook.lastCell();
   last.attachToDOM(document.querySelector('[data-output]'));
   return thebeCore.api.connect(opts).then((kernel) => {
+    console.log('got kernel', kernel);
     scope.notebook.attachKernel(kernel);
     scope.kernel = kernel;
     return kernel;
