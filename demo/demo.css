@@ -6,6 +6,9 @@ pre {
   max-width: 500px;
   padding: 10px;
 }
+button {
+  cursor: pointer;
+}
 .status {
   font-weight: bold;
 }

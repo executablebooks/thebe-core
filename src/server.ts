@@ -303,7 +303,7 @@ class ThebeServer {
 
             log?.({
               subject: MessageSubject.server,
-              status: ServerStatus.launching,
+              status: ServerStatus.ready,
               id,
               message: `Binder server is ready: ${msg.message}`,
             });
