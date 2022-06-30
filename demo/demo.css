@@ -1,0 +1,11 @@
+body {
+  padding: 10px;
+}
+pre {
+  border: 1px gray solid;
+  max-width: 500px;
+  padding: 10px;
+}
+.status {
+  font-weight: bold;
+}

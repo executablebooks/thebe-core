@@ -3,16 +3,9 @@ import ThebeSession from './session';
 import ThebeNotebook from './notebook';
 import ThebeServer from './server';
 import { KernelSpecAPI } from '@jupyterlab/services';
+import type { ServerStatus } from './messaging';
 
 export type JsonObject = Record<string, any>;
-
-export enum ServerStatus {
-  'launching' = 'launching',
-  'ready' = 'server-ready',
-  'closed' = 'closed',
-  'failed' = 'failed',
-  'unknown' = 'unknown',
-}
 
 export interface ServerInfo {
   id: string;

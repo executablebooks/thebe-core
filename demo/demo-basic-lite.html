@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <link rel="stylesheet" href="https://unpkg.com/@curvenote/article/dist/curvenote.css" />
+    <link rel="stylesheet" href="demo.css" />
+    <script type="text/x-mathjax-config" src="mathjax.js"></script>
+    <script
+      type="text/javascript"
+      async
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML"
+    ></script>
+    <script
+      type="text/javascript"
+      async
+      src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+    />
+    <script src="https://unpkg.com/@curvenote/article"></script>
+    <script src="demo-basic.js" type="text/javascript"></script>
+    <style>
+      body {
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Demo: thebe-core</h1>
+    <p>
+      This is a demonstration of <em>thebe-core</em> starting up and connecting to a jupyterlite
+      server
+    </p>
+    <p />
+    <pre>
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+</pre
+    >
+    <pre>
+mu = 5
+sigma = 5</pre
+    >
+    <pre>
+plt.ion()
+fig, ax = plt.subplots()
+x = np.arange(-10,10,0.1)
+y = stats.norm.pdf(x, mu, sigma)
+ax.plot(x,y);
+plt.grid(True)</pre
+    >
+    <p>
+      Current server status is
+      <span id="server-status" class="status">none</span> and session/kernel status is
+      <span id="session-status" class="status">none</span>
+    </p>
+    <button id="connect">Connect to JupyterLite</button>
+    <button id="run-all" disabled>run all</button>
+    <button id="run-last" disabled>run last</button>
+    <button id="restart" disabled>restart</button>
+    <div data-output="true"></div>
+    <script>
+      const options = {
+        useBinder: false,
+        useJupyterLite: true,
+        requestSession: true,
+      };
+
+      document.addEventListener('DOMContentLoaded', async function () {
+        const attachButton = document.getElementById('connect');
+        attachButton.onclick = (ev) => {
+          attachButton.setAttribute('disabled', true);
+          demoBasic(code, options);
+        };
+      });
+    </script>
+  </body>
+</html>

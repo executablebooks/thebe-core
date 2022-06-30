@@ -1,11 +1,12 @@
 import { JupyterLiteServer } from '@jupyterlite/server';
+import { MessageCallback } from './messaging';
 
 const serverExtensions = [
   import('@jupyterlite/pyolite-kernel-extension'),
   import('@jupyterlite/server-extension'),
 ];
 
-export async function startJupyterLiteServer() {
+export async function startJupyterLiteServer(log?: MessageCallback) {
   const litePluginsToRegister: JupyterLiteServer.IPluginModule[] = [];
 
   /**

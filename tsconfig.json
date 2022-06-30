@@ -14,7 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "*/": ["node_modules/*"],
-      "~/": ["src/*"]
+      "~/": ["./src/*"]
     },
     "declaration": true,
     "skipLibCheck": true

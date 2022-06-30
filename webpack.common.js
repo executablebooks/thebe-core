@@ -16,14 +16,19 @@ module.exports = {
       template: 'demo/index.html',
     }),
     new HtmlWebpackPlugin({
-      filename: 'basic-observe.html',
+      filename: 'basic-binder.html',
       title: 'thebe-core-basic',
-      template: 'demo/demo-basic-observe.html',
+      template: 'demo/demo-basic-binder.html',
     }),
     new HtmlWebpackPlugin({
-      filename: 'local.html',
-      title: 'thebe-core-ipywidgets-local',
-      template: 'demo/local.html',
+      filename: 'basic-local.html',
+      title: 'thebe-core-basic-local',
+      template: 'demo/demo-basic-local.html',
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'basic-lite.html',
+      title: 'thebe-core-basic-lite',
+      template: 'demo/demo-basic-lite.html',
     }),
     new HtmlWebpackPlugin({
       filename: 'ipywidgets.html',
@@ -45,11 +50,7 @@ module.exports = {
       title: 'thebe-core-demo-kernels',
       template: 'demo/demo-kernels.html',
     }),
-    new HtmlWebpackPlugin({
-      filename: 'demo-lite.html',
-      title: 'thebe-core-demo-lite',
-      template: 'demo/demo-lite.html',
-    }),
+
     new DefinePlugin({ 'process.env': {} }),
   ],
   output: {

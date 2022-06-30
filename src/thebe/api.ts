@@ -1,27 +1,25 @@
+import { MessageCallback } from '../messaging';
 import ThebeServer from '../server';
 import ThebeSession from '../session';
 import ThebeNotebook, { CodeBlock } from '../notebook';
 import { MathjaxOptions, Options } from '../types';
 import { ensureOptions } from '../options';
-import { startJupyterLiteServer } from '../jlite';
 
 export async function connect(
-  options: Partial<Options>
+  options: Partial<Options>,
+  log?: MessageCallback
 ): Promise<{ server: ThebeServer; session?: ThebeSession }> {
   const opts = ensureOptions(options);
   let server: ThebeServer;
   if (options.useBinder) {
     console.debug(`thebe:api:connect useBinder`, options);
-    server = await ThebeServer.connectToServerViaBinder(opts);
+    server = await ThebeServer.connectToServerViaBinder(opts, log);
   } else if (options.useJupyterLite) {
     console.debug(`thebe:api:connect JupyterLite`, options);
-    const serviceManager = await startJupyterLiteServer();
-    server = await ThebeServer.connectToJupyterLiteServer(serviceManager);
+    server = await ThebeServer.connectToJupyterLiteServer(log);
   } else {
-    server = await ThebeServer.connectToJupyterServer(opts.kernelOptions.serverSettings);
+    server = await ThebeServer.connectToJupyterServer(opts.kernelOptions.serverSettings, log);
   }
-
-  await server.ready;
 
   if (options.requestSession) {
     const session = await server.requestSession({
