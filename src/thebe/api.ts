@@ -23,9 +23,9 @@ export async function connect(
 
   if (options.requestSession) {
     const session = await server.requestSession({
-      name: 'python',
-      path: 'any.ipynb',
-      kernelName: 'python',
+      name: opts.kernelOptions.name,
+      path: opts.kernelOptions.path,
+      kernelName: opts.kernelOptions.kernelName ?? opts.kernelOptions.name,
     });
     return { server, session };
   }

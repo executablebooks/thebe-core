@@ -2,7 +2,7 @@ import { ServerConnection } from '@jupyterlab/services';
 import {
   RequestServerSettings,
   BinderOptions,
-  KernelOptions,
+  SessionOptions,
   Options,
   RepoProvider,
 } from './types';
@@ -30,10 +30,10 @@ export function ensureBinderOptions(options: Partial<BinderOptions>) {
   };
 }
 
-const DEFAULT_KERNEL_OPTIONS: KernelOptions = {
+const DEFAULT_KERNEL_OPTIONS: SessionOptions = {
   path: '/',
-  name: 'python3',
-  kernelName: 'python3',
+  name: 'python',
+  kernelName: 'python',
   serverSettings: {
     baseUrl: 'http://localhost:8888',
     token: 'test-secret',
@@ -41,7 +41,7 @@ const DEFAULT_KERNEL_OPTIONS: KernelOptions = {
   } as RequestServerSettings,
 };
 
-export function ensureKernelOptions(options: Partial<KernelOptions>) {
+export function ensureKernelOptions(options: Partial<SessionOptions>) {
   return {
     ...DEFAULT_KERNEL_OPTIONS,
     ...options,

@@ -3,7 +3,7 @@ import {
   RepoProvider,
   BasicServerSettings,
   Options,
-  KernelOptions,
+  SessionOptions,
 } from './types';
 import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from './url';
 import { nanoid } from 'nanoid';
@@ -43,7 +43,7 @@ class ThebeServer {
     return this.sessionManager?.serverSettings;
   }
 
-  async requestSession(kernelOptions: Omit<KernelOptions, 'serverSettings'>) {
+  async requestSession(kernelOptions: Omit<SessionOptions, 'serverSettings'>) {
     if (!this.sessionManager) {
       throw Error('Requesting session from a server, with no SessionManager available');
     }

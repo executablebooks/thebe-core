@@ -3,3 +3,6 @@ dist/
 yarn.lock
 demo/build/
 demo/api/
+tmp/
+.jupyterlite.doit.db
+.DS_Store
