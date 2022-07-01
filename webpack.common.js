@@ -15,21 +15,6 @@ module.exports = {
       title: 'thebe-core',
       template: 'demo/index.html',
     }),
-    new HtmlWebpackPlugin({
-      filename: 'demo.html',
-      title: 'thebe-core-demo',
-      template: 'demo/demo.html',
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'ipyleaflet.html',
-      title: 'thebe-core-ipyleaflet',
-      template: 'demo/ipyleaflet.html',
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'demo-kernels.html',
-      title: 'thebe-core-demo-kernels',
-      template: 'demo/demo-kernels.html',
-    }),
     new DefinePlugin({ 'process.env': {} }),
   ],
   output: {

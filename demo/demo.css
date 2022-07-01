@@ -1,5 +1,11 @@
 body {
   padding: 10px;
+  font-family: Helvetica, Arial, Sans-Serif;
+  display: flex;
+}
+body > div {
+  margin: 16px;
+  max-width: 720px;
 }
 pre {
   border: 1px gray solid;
@@ -11,4 +17,10 @@ button {
 }
 .status {
   font-weight: bold;
+}
+
+@media (max-width: 1440px) {
+  body {
+    flex-direction: column;
+  }
 }
