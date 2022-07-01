@@ -18,7 +18,7 @@ export async function connect(
     console.debug(`thebe:api:connect JupyterLite`, options);
     server = await ThebeServer.connectToJupyterLiteServer(log);
   } else {
-    server = await ThebeServer.connectToJupyterServer(opts.kernelOptions.serverSettings, log);
+    server = await ThebeServer.connectToJupyterServer(opts, log);
   }
 
   if (options.requestKernel) {

@@ -67,7 +67,7 @@
       const LITE_OPTIONS = {
         useBinder: false,
         useJupyterLite: true,
-        requestSession: true,
+        requestKernel: true,
         kernelOptions: {
           name: 'python',
           kernelName: 'python',
@@ -76,7 +76,7 @@
 
       const LOCAL_OPTIONS = {
         useBinder: false,
-        requestSession: true,
+        requestKernel: true,
         kernelOptions: {
           name: 'python3',
           serverSettings: {
@@ -89,7 +89,7 @@
 
       const BINDER_OPTIONS = {
         useBinder: true,
-        requestSession: true,
+        requestKernel: true,
         binderOptions: {
           repo: 'matplotlib/ipympl',
           ref: '0.6.1',

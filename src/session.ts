@@ -1,5 +1,5 @@
 import { nanoid, Store, Unsubscribe } from '@reduxjs/toolkit';
-import { SessionOptions, Options, ThebeContext } from './types';
+import { KernelOptions, Options, ThebeContext } from './types';
 import { Kernel, KernelManager, ServerConnection, Session } from '@jupyterlab/services';
 import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
 import ThebeServer from './server';

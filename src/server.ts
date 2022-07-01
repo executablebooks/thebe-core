@@ -3,7 +3,7 @@ import {
   RepoProvider,
   BasicServerSettings,
   Options,
-  SessionOptions,
+  KernelOptions,
 } from './types';
 import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from './url';
 import { nanoid } from 'nanoid';
@@ -43,7 +43,7 @@ class ThebeServer {
     return this.sessionManager?.serverSettings;
   }
 
-  async requestKernel(kernelOptions: Omit<SessionOptions, 'serverSettings'>) {
+  async requestKernel(kernelOptions: Omit<KernelOptions, 'serverSettings'>) {
     if (!this.sessionManager) {
       throw Error('Requesting session from a server, with no SessionManager available');
     }
@@ -96,11 +96,11 @@ class ThebeServer {
    *
    */
   static async connectToJupyterServer(
-    requestSettings: RequestServerSettings,
+    options: Options,
     log?: MessageCallback
   ): Promise<ThebeServer> {
     const id = nanoid();
-    const serverSettings = ServerConnection.makeSettings(requestSettings);
+    const serverSettings = ServerConnection.makeSettings(options.kernelOptions.serverSettings);
     console.debug('thebe:api:connectToJupyterServer:serverSettings:', serverSettings);
 
     let kernelManager = new KernelManager({ serverSettings });
@@ -108,7 +108,7 @@ class ThebeServer {
       subject: MessageSubject.server,
       status: ServerStatus.launching,
       id,
-      message: `Created KernelManager: ${requestSettings.baseUrl}`,
+      message: `Created KernelManager: ${serverSettings.baseUrl}`,
     });
 
     const sessionManager = new SessionManager({ kernelManager, serverSettings });

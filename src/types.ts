@@ -29,7 +29,7 @@ export interface Options {
   useJupyterLite: boolean;
   requestKernel: boolean;
   binderOptions: BinderOptions;
-  kernelOptions: SessionOptions;
+  kernelOptions: KernelOptions;
 }
 
 export enum RepoProvider {
@@ -71,7 +71,7 @@ export type BasicServerSettings = RequestServerSettings & {
   wsUrl: string;
 };
 
-export interface SessionOptions {
+export interface KernelOptions {
   name: string;
   kernelName: string;
   path: string;
