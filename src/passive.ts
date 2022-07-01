@@ -1,9 +1,9 @@
-import * as nbformat from "@jupyterlab/nbformat";
-import { getRenderMimeRegistry } from "./rendermime";
-import { OutputArea, OutputAreaModel } from "@jupyterlab/outputarea";
-import { Widget } from "@lumino/widgets";
-import { IRenderMime, RenderMimeRegistry } from "@jupyterlab/rendermime";
-import { MathjaxOptions } from "./types";
+import * as nbformat from '@jupyterlab/nbformat';
+import { getRenderMimeRegistry } from './rendermime';
+import { OutputArea, OutputAreaModel } from '@jupyterlab/outputarea';
+import { Widget } from '@lumino/widgets';
+import { IRenderMime, RenderMimeRegistry } from '@jupyterlab/rendermime';
+import { MathjaxOptions } from './types';
 
 class PassiveCellRenderer {
   id: string;
@@ -31,25 +31,25 @@ class PassiveCellRenderer {
     this.rendermime.addFactory(factory, rank);
   }
 
-  attachToDOM(el: HTMLElement) {
-    if (!this.area) return;
+  attachToDOM(el?: HTMLElement) {
+    if (!this.area || !el) return;
     if (this.area.isAttached) return;
     console.debug(`thebe:renderer:attach ${this.id}`);
 
     // if the target element has contents, preserve it but wrap it in our output area
     if (el.innerHTML) {
       this.area.model.add({
-        output_type: "display_data",
+        output_type: 'display_data',
         data: {
-          "text/html": el.innerHTML,
+          'text/html': el.innerHTML,
         },
       });
     }
-    el.textContent = "";
+    el.textContent = '';
 
-    const div = document.createElement("div");
-    div.style.position = "relative";
-    div.className = "thebe-cell-renderer";
+    const div = document.createElement('div');
+    div.style.position = 'relative';
+    div.className = 'thebe-cell-renderer';
     el.append(div);
 
     Widget.attach(this.area, div);
@@ -59,8 +59,8 @@ class PassiveCellRenderer {
     if (!this.area) return;
     this.area.model.clear(true);
     this.area.model.add({
-      output_type: "stream",
-      name: "stdout",
+      output_type: 'stream',
+      name: 'stdout',
       text,
     });
   }
@@ -70,8 +70,8 @@ class PassiveCellRenderer {
     // could update redux with state here?
     this.area.model.clear();
     this.area.model.add({
-      output_type: "stream",
-      name: "stderr",
+      output_type: 'stream',
+      name: 'stderr',
       text: `Failed to execute. ${error} Please refresh the page.`,
     });
   }

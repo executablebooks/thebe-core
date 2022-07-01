@@ -1,57 +1,39 @@
-import Server from "../server";
-import ThebeKernel from "../kernel";
-import Notebook, { CodeBlock } from "../notebook";
-import { Options } from "../types";
-import { ensureOptions } from "../options";
-import { nanoid } from "nanoid";
-import { getContext } from "../context";
+import { MessageCallback } from '../messaging';
+import ThebeServer from '../server';
+import ThebeSession from '../session';
+import ThebeNotebook, { CodeBlock } from '../notebook';
+import { MathjaxOptions, Options } from '../types';
+import { ensureOptions } from '../options';
 
-export function connect(options: Partial<Options>): Promise<ThebeKernel> {
+export async function connect(
+  options: Partial<Options>,
+  log?: MessageCallback
+): Promise<{ server: ThebeServer; session?: ThebeSession }> {
+  const opts = ensureOptions(options);
+  let server: ThebeServer;
   if (options.useBinder) {
-    return connectToBinder(options);
-  }
-  return connectToJupyter(options);
-}
-
-export async function connectToBinder(
-  options: Partial<Options>
-): Promise<ThebeKernel> {
-  const opts = ensureOptions(options);
-  const server = await Server.connectToServerViaBinder(opts.binderOptions);
-  const kernel = new ThebeKernel(nanoid(), server.id);
-  return kernel.subscribeAndRequestKernelFromServer(
-    server,
-    opts.kernelOptions.name
-  );
-}
-
-export async function connectToJupyter(
-  options: Partial<Options>
-): Promise<ThebeKernel> {
-  const opts = ensureOptions(options);
-  const server = await Server.connectToServer(
-    opts.kernelOptions.serverSettings
-  );
-  const kernel = new ThebeKernel(nanoid(), server.id);
-  return kernel.subscribeAndRequestKernelFromServer(
-    server,
-    opts.kernelOptions.name
-  );
-}
-
-export function setupNotebook(blocks: CodeBlock[]) {
-  return Notebook.fromCodeBlocks(blocks);
-}
-
-export async function restartKernel(kernelId: string) {
-  const ctx = getContext();
-  if (kernelId in ctx.kernels) {
-    await ctx.kernels[kernelId].restart();
+    console.debug(`thebe:api:connect useBinder`, options);
+    server = await ThebeServer.connectToServerViaBinder(opts, log);
+  } else if (options.useJupyterLite) {
+    console.debug(`thebe:api:connect JupyterLite`, options);
+    server = await ThebeServer.connectToJupyterLiteServer(log);
   } else {
-    console.debug(`thebe:api:restartKernel could not find kernel ${kernelId}`);
+    server = await ThebeServer.connectToJupyterServer(opts, log);
   }
+
+  if (options.requestKernel) {
+    const session = await server.requestKernel({
+      name: opts.kernelOptions.name,
+      path: opts.kernelOptions.path,
+      kernelName: opts.kernelOptions.kernelName ?? opts.kernelOptions.name,
+    });
+    return { server, session };
+  }
+
+  return { server };
 }
 
-export function clear() {
-  Server.clearAllServers();
+export function setupNotebook(blocks: CodeBlock[], options: Partial<Options>) {
+  const { mathjaxUrl, mathjaxConfig } = ensureOptions(options);
+  return ThebeNotebook.fromCodeBlocks(blocks, { url: mathjaxUrl, config: mathjaxConfig });
 }

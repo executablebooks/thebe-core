@@ -1,99 +1,31 @@
 # thebe-core
 
-This is an out-of-core refactor of the original [thebe](https://github.com/executablebooks/thebe) code, with no direct dependency on jQuery, minimal UI concerns and is suitable for use in a wider range of web applications than the original.
+`thebe-core` is a headless connector library allowing a developer to connect to and execute on a Jupyter based compute resource from any web page.
+
+Written in Typescript and indended for use in other packages and applicaitons, `thebe-core` has minimal state and introduces no restrictions on UI frameworks that might be used. [thebe](https://github.com/executablebooks/thebe) will use `thebe-core` to provide a `jquery` based connector, that uses prosemirror to enable editing and execution of code cells on any webpage.
+
+`thebe-core` supports connecting to a BinderHub, JupyterHub, any Jupyter instance or JupyterLite with the pyiolite kernel.
+
+![thebe-core with ipywidgets](thebe-lite-widgets.gif)
 
 ## Status
 
-Refactoring work is still ongoing with changes and discussion being tracked [in this issue](https://github.com/executablebooks/thebe-core/issues/1)
+`thebe-core` should be considered as beta software and may be subject to further significant changes, however it is ready for test integration and usage. We welcome feedback.
 
-Once we're happy with the baseline refactor, the plan is to integrate these changes back into `thebe` improving the maintainability of thst library and opening up oportunities to extend it further. Discussion and requriements for that integation are being tracked [in this issue](https://github.com/executablebooks/thebe/issues/536)
+# Getting Started
 
-## Development
-
-Note: Currently only a development build is available
-
-Local setup:
+Currently only a development build is available via npm, to install as a dependency of your Typescript project:
 
 ```
-  git clone git@github.com:executablebooks/thebe-core.git
-  cd thebe-core
-  yarn install
+  npm install thebe-core
 ```
 
-For local development, start a webpack devserver by:
+TODO: Provide initial API docs
 
-```
-  yarn start
-```
+# Contributing
 
-This will serve example pages from `/demo` containing minimal working examples on [http://localhost:3003](http://localhost:3003), the examples
-`ipywidgets.html` and `local.html` can be reached by appending to the base url.
-
-The `local.html` example requires a local kernel, start jupyter with the following command to start a server that the demo can connect to.
-
-```
-  jupyter notebook --NotebookApp.tioken=test-secret --NotebookApp.allow_origin="*"
-```
-
-To create a full build, with both typescript module and webpack bundle run:
-
-```
-  yarn build
-```
-
-Output will be in the `dist` folder with the js bundle in `dist/lib`.
+To learn how to build `thebe-core` itself and contribute to the development of the library see [Contributing](contributing.md)
 
 ## Usage
-
-### Typescript
-
-The libary can be consumed from typescript applications via yarn / npm install as with any other package.
-
-If you are not using redux in your application simply call `setupThebeCore()` to setup the library, `thebe-core`
-will create it's own store.
-
-If your application uses redux, integrate `thebe` into you applications store by adding it' reducer and passing yoru store to the
-setup function.
-
-```
-  import { setupThebeCore, thebeReducer } from "thebe-core";
-  import reducer from './app/store';
-
-  const store = createStore(combineReducers({
-      app: reducer,
-      thebe: thebeReducer
-    }));
-
-  setupThebeCore(store)
-```
-
-### Javascript
-
-For use in place javascript load `dist/lib/index.js` onto you page, in this scenario `setupThebeCore()` is called automatically
-and `thebe-core` will be available on `window.thebeCore`. That object contains a ThebeContext and an JsApi with functions intended
-to be used from browser based scripts.
-
-```
-  window.thebeCore = {
-    ctx: ThebeContext,
-    api: JsApi
-  }
-
-  interface ThebeContext {
-    store: EnhancedStore<State>; // redux store
-    kernels: Record<string, ThebeKernel>; // runtime objects containing kenrel connections
-    notebooks: Record<string, Notebook>;  // runtime objects containing notebooks and cell renderers
-  }
-
-  interface JsApi {
-    configure: (options: Partial<Options>) => void;
-    connect: (options: Partial<Options>) => Promise<ThebeKernel>;
-    binder: (options: Partial<Options>) => Promise<ThebeKernel>;
-    jupyter: (options: Partial<Options>) => Promise<ThebeKernel>;
-    setupNotebook: (blocks: CodeBlock[]) => Notebook;
-    restartKernel: (kernelId: string) => void;
-    clear: () => void;
-  }
-```
 
 For more information on how to invoke thebe and connect to a kernel see [demo/index.html](./demo/index.html) and [demo/demo.js](./demo/demo.js).

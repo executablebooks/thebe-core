@@ -1,33 +1,30 @@
-import { requireLoader } from "./loader";
-import { DocumentRegistry } from "@jupyterlab/docregistry";
-import { INotebookModel } from "@jupyterlab/notebook";
+import { requireLoader } from './loader';
+import { DocumentRegistry } from '@jupyterlab/docregistry';
+import { INotebookModel } from '@jupyterlab/notebook';
 
-import * as LuminoWidget from "@lumino/widgets";
+import * as LuminoWidget from '@lumino/widgets';
 
-import {
-  RenderMimeRegistry,
-  standardRendererFactories,
-} from "@jupyterlab/rendermime";
+import { RenderMimeRegistry, standardRendererFactories } from '@jupyterlab/rendermime';
 
 import {
   WidgetManager as JupyterLabManager,
   WidgetRenderer,
   output,
-} from "@jupyter-widgets/jupyterlab-manager";
+} from '@jupyter-widgets/jupyterlab-manager';
 
-import { IKernelConnection } from "@jupyterlab/services/lib/kernel/kernel";
-import { ISessionConnection } from "@jupyterlab/services/lib/session/session";
-import { Widget } from "@lumino/widgets";
+import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
+import { ISessionConnection } from '@jupyterlab/services/lib/session/session';
+import { Widget } from '@lumino/widgets';
 
-export const WIDGET_MIMETYPE = "application/vnd.jupyter.widget-view+json";
+export const WIDGET_MIMETYPE = 'application/vnd.jupyter.widget-view+json';
 
-import * as base from "@jupyter-widgets/base";
-import * as controls from "@jupyter-widgets/controls";
+import * as base from '@jupyter-widgets/base';
+import * as controls from '@jupyter-widgets/controls';
 
-if (typeof window !== "undefined" && typeof window.define !== "undefined") {
-  window.define("@jupyter-widgets/base", base);
-  window.define("@jupyter-widgets/controls", controls);
-  window.define("@jupyter-widgets/output", output);
+if (typeof window !== 'undefined' && typeof window.define !== 'undefined') {
+  window.define('@jupyter-widgets/base', base);
+  window.define('@jupyter-widgets/controls', controls);
+  window.define('@jupyter-widgets/output', output);
 }
 
 export class ThebeManager extends JupyterLabManager {
@@ -58,27 +55,23 @@ export class ThebeManager extends JupyterLabManager {
 
   _registerWidgets() {
     this.register({
-      name: "@jupyter-widgets/base",
+      name: '@jupyter-widgets/base',
       version: base.JUPYTER_WIDGETS_VERSION,
       exports: base as unknown as base.ExportData, // TODO improve typing
     });
     this.register({
-      name: "@jupyter-widgets/controls",
+      name: '@jupyter-widgets/controls',
       version: controls.JUPYTER_CONTROLS_VERSION,
       exports: controls as unknown as base.ExportData, // TODO improve typing
     });
     this.register({
-      name: "@jupyter-widgets/output",
+      name: '@jupyter-widgets/output',
       version: output.OUTPUT_WIDGET_VERSION,
       exports: output as unknown as base.ExportData, // TODO improve typing
     });
   }
 
-  async display_view(
-    msg: any,
-    view: Backbone.View<Backbone.Model>,
-    options: any
-  ): Promise<Widget> {
+  async display_view(msg: any, view: Backbone.View<Backbone.Model>, options: any): Promise<Widget> {
     if (options.el) {
       LuminoWidget.Widget.attach((view as any).pWidget, options.el);
     }
@@ -92,9 +85,9 @@ export class ThebeManager extends JupyterLabManager {
   ): Promise<typeof base.WidgetModel | typeof base.WidgetView> {
     console.debug(`thebe:manager:loadClass ${moduleName}@${moduleVersion}`);
     if (
-      moduleName === "@jupyter-widgets/base" ||
-      moduleName === "@jupyter-widgets/controls" ||
-      moduleName === "@jupyter-widgets/output"
+      moduleName === '@jupyter-widgets/base' ||
+      moduleName === '@jupyter-widgets/controls' ||
+      moduleName === '@jupyter-widgets/output'
     ) {
       return super.loadClass(className, moduleName, moduleVersion);
     } else {
@@ -113,17 +106,13 @@ export class ThebeManager extends JupyterLabManager {
         console.error(
           `thebe:manager:loadClass ${className} not found in module ${moduleName}@${moduleVersion}`
         );
-        throw new Error(
-          `Class ${className} not found in module ${moduleName}@${moduleVersion}`
-        );
+        throw new Error(`Class ${className} not found in module ${moduleName}@${moduleVersion}`);
       }
     }
   }
 }
 
-function createContext(
-  kernel: IKernelConnection
-): DocumentRegistry.IContext<INotebookModel> {
+function createContext(kernel: IKernelConnection): DocumentRegistry.IContext<INotebookModel> {
   return {
     sessionContext: {
       session: {

@@ -1,3 +1,8 @@
 node_modules/
 dist/
-package-lock.json
+yarn.lock
+demo/build/
+demo/api/
+tmp/
+.jupyterlite.doit.db
+.DS_Store

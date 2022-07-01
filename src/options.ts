@@ -1,24 +1,21 @@
-import { ServerConnection } from "@jupyterlab/services";
-import { getContext } from "./context";
+import { ServerConnection } from '@jupyterlab/services';
 import {
   RequestServerSettings,
   BinderOptions,
   KernelOptions,
   Options,
   RepoProvider,
-  ThebeContext,
-} from "./types";
-import { actions } from "./store";
+} from './types';
 
 const DEFAULT_BINDER_OPTIONS: BinderOptions = {
-  repo: "binder-examples/requirements",
-  ref: "master",
-  binderUrl: "https://mybinder.org",
+  repo: 'binder-examples/requirements',
+  ref: 'master',
+  binderUrl: 'https://mybinder.org',
   repoProvider: RepoProvider.github,
   savedSession: {
     enabled: true,
     maxAge: 86400,
-    storagePrefix: "thebe-binder-",
+    storagePrefix: 'thebe-binder-',
   },
 };
 
@@ -34,12 +31,12 @@ export function ensureBinderOptions(options: Partial<BinderOptions>) {
 }
 
 const DEFAULT_KERNEL_OPTIONS: KernelOptions = {
-  path: "/",
-  name: "python3",
-  kernelName: "python3",
+  path: '/',
+  name: 'python',
+  kernelName: 'python',
   serverSettings: {
-    baseUrl: "http://localhost:8888",
-    token: "test-secret",
+    baseUrl: 'http://localhost:8888',
+    token: 'test-secret',
     appendToken: true,
   } as RequestServerSettings,
 };
@@ -61,26 +58,10 @@ export function ensureOptions(options: Partial<Options>): Options {
 
   return {
     useBinder: true,
+    useJupyterLite: false,
     requestKernel: true,
     ...options,
     binderOptions,
     kernelOptions,
   };
-}
-
-export function configure(options: Partial<Options>) {
-  const opts = ensureOptions(options);
-  const ctx = getContext();
-  ctx.store.dispatch(
-    actions.config.update({
-      config: {
-        mathjax: {
-          url: opts.mathjaxUrl,
-          config: opts.mathjaxConfig,
-        },
-        sessionSaving: opts.binderOptions?.savedSession,
-      },
-    })
-  );
-  return opts;
 }

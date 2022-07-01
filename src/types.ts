@@ -1,31 +1,42 @@
-import { EnhancedStore } from "@reduxjs/toolkit";
-import CellRenderer from "./renderer";
-import ThebeKernel from "./kernel";
-import Notebook from "./notebook";
-import { State } from "./store";
+import { EnhancedStore } from '@reduxjs/toolkit';
+import ThebeSession from './session';
+import ThebeNotebook from './notebook';
+import ThebeServer from './server';
+import { KernelSpecAPI } from '@jupyterlab/services';
+import type { ServerStatus } from './messaging';
 
 export type JsonObject = Record<string, any>;
 
+export interface ServerInfo {
+  id: string;
+  url: string;
+  status: ServerStatus;
+  message: string;
+  settings: BasicServerSettings | null;
+  specs: KernelSpecAPI.ISpecModels;
+}
+
 export interface ThebeContext {
-  store: EnhancedStore<State>;
-  kernels: Record<string, ThebeKernel>;
-  notebooks: Record<string, Notebook>;
+  servers: Record<string, ThebeServer>;
+  kernels: Record<string, ThebeSession>;
+  notebooks: Record<string, ThebeNotebook>;
 }
 
 export interface Options {
   mathjaxUrl?: string;
   mathjaxConfig?: string;
   useBinder: boolean;
+  useJupyterLite: boolean;
   requestKernel: boolean;
   binderOptions: BinderOptions;
   kernelOptions: KernelOptions;
 }
 
 export enum RepoProvider {
-  "git" = "git",
-  "github" = "github",
-  "gitlab" = "gitlab",
-  "gist" = "gist",
+  'git' = 'git',
+  'github' = 'github',
+  'gitlab' = 'gitlab',
+  'gist' = 'gist',
 }
 
 export interface MathjaxOptions {
