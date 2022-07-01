@@ -43,7 +43,7 @@ class ThebeServer {
     return this.sessionManager?.serverSettings;
   }
 
-  async requestSession(kernelOptions: Omit<SessionOptions, 'serverSettings'>) {
+  async requestKernel(kernelOptions: Omit<SessionOptions, 'serverSettings'>) {
     if (!this.sessionManager) {
       throw Error('Requesting session from a server, with no SessionManager available');
     }

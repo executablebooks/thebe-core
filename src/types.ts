@@ -27,7 +27,7 @@ export interface Options {
   mathjaxConfig?: string;
   useBinder: boolean;
   useJupyterLite: boolean;
-  requestSession: boolean;
+  requestKernel: boolean;
   binderOptions: BinderOptions;
   kernelOptions: SessionOptions;
 }

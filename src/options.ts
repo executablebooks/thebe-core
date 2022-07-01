@@ -59,7 +59,7 @@ export function ensureOptions(options: Partial<Options>): Options {
   return {
     useBinder: true,
     useJupyterLite: false,
-    requestSession: true,
+    requestKernel: true,
     ...options,
     binderOptions,
     kernelOptions,

@@ -21,8 +21,8 @@ export async function connect(
     server = await ThebeServer.connectToJupyterServer(opts.kernelOptions.serverSettings, log);
   }
 
-  if (options.requestSession) {
-    const session = await server.requestSession({
+  if (options.requestKernel) {
+    const session = await server.requestKernel({
       name: opts.kernelOptions.name,
       path: opts.kernelOptions.path,
       kernelName: opts.kernelOptions.kernelName ?? opts.kernelOptions.name,
