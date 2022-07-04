@@ -32,7 +32,7 @@ module.exports = {
     rules: [
       {
         test: /pypi\/.*/,
-        type: 'asset/resource',
+        type: 'asset/source',
       },
       {
         resourceQuery: /raw/,
