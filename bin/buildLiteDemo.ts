@@ -1,24 +1,10 @@
 import { promisify } from 'util';
 import { exec as execCb } from 'child_process';
-import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import { mkdtemp } from 'node:fs/promises';
 import chalk from 'chalk';
 
 const exec = promisify(execCb);
-
-async function getJupyterLiteInstalledVersion() {
-  try {
-    const res = await exec('jupyter lite --version');
-    if (res.stderr === '') return res.stdout.trim();
-    console.error(chalk.red(res.stderr));
-    process.exit(-1);
-  } catch (err: any) {
-    console.error(chalk.red(err.stderr));
-    process.exit(1);
-  }
-}
 
 function getJupyterLiteDependencyVersion() {
   const json = JSON.parse(
@@ -27,7 +13,7 @@ function getJupyterLiteDependencyVersion() {
     })
   );
 
-  return json.dependencies['@jupyterlite/server']
+  return json.devDependencies['@jupyterlite/server']
     .replace('^', '')
     .replace('-beta.', 'b')
     .replace('-alpha.', 'a')
@@ -41,7 +27,7 @@ function getWheelsAndSpec(
   json: any;
   wheels: { filename: string; filepath: string }[];
 } {
-  const readPath = path.join(litePath, 'build', 'pypi');
+  const readPath = path.join(litePath, 'lib', 'pypi');
   const jsonPath = path.join(readPath, 'all.json');
   const json: { [x: string]: { releases: { [x: string]: { filename: string }[] } } } = JSON.parse(
     fs.readFileSync(jsonPath, { encoding: 'utf8' })
@@ -69,30 +55,17 @@ function getWheelsAndSpec(
 }
 
 async function main(copyIndex = false, outdir = path.join(__dirname, '..', 'demo')) {
-  const installedVersion = await getJupyterLiteInstalledVersion();
   const dependencyVersion = await getJupyterLiteDependencyVersion();
-  if (installedVersion !== dependencyVersion) {
-    console.error(
-      chalk.red(`Error - both installed and dependency versions of jupyterlite must match`)
-    );
-    console.error(chalk.red(`Got installed: ${installedVersion}`));
-    console.error(chalk.red(`Requires: ${dependencyVersion}`));
-    process.exit(1);
-  }
-  console.log(chalk.green(`Using jupyterlite ${installedVersion}`));
-  const tmpPath = await mkdtemp(`${os.tmpdir()}${path.sep}thebe`);
-  console.log(chalk.green('Building temporary site in', tmpPath));
+  console.log(chalk.green(`Using jupyterlite ${dependencyVersion}`));
 
-  await exec(`jupyter lite build --lite-dir=${tmpPath}`);
-
-  const litePath = path.join(tmpPath, '_output');
-  if (!fs.existsSync(litePath)) {
-    console.error(chalk.red(`Can't find lite output folder at ${litePath}`));
+  const distPath = path.join(__dirname, '..', 'dist');
+  if (!fs.existsSync(distPath)) {
+    console.error(chalk.red(`Can't find lite output folder at ${distPath}`));
     console.error(chalk.red('Maybe `jupyter lite build` did not complete'));
     process.exit(1);
   }
 
-  const { json, wheels } = getWheelsAndSpec(litePath, dependencyVersion);
+  const { json, wheels } = getWheelsAndSpec(distPath, dependencyVersion);
   console.log(
     chalk.green(`Found ${wheels.length} wheels: ${wheels.map(({ filename }) => filename)}`)
   );
@@ -107,8 +80,6 @@ async function main(copyIndex = false, outdir = path.join(__dirname, '..', 'demo
     fs.copyFileSync(w.filepath, path.join(buildPyPi, w.filename));
     console.log(chalk.green(`Copied ${w.filepath} to ${path.join(buildPyPi, w.filename)}`));
   });
-
-  fs.rmdirSync(tmpPath, { recursive: true });
 
   console.log(chalk.green('Adding stub api/contents'));
   const apiContents = path.join(outdir, 'api', 'contents');
