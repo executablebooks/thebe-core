@@ -51,8 +51,8 @@ const IPYLEAFLET_CODE = [
   `from ipyleaflet import Map
 from ipywidgets import Layout
 # Collect common parameters
-zoom = 8 # @param
-place = None # @param
+zoom = 8
+place = None
 
 # Create ipyleaflet tile layer from that server
 
