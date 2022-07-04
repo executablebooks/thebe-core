@@ -29,3 +29,11 @@ To learn how to build `thebe-core` itself and contribute to the development of t
 ## Usage
 
 For more information on how to invoke thebe and connect to a kernel see [demo/index.html](./demo/index.html) and [demo/demo.js](./demo/demo.js).
+
+# License
+
+`thebe-core` is licensed under BSD 3 Clause Revised License - see [LICENSE](./LICENSE).
+
+# Acknowledgements
+
+`thebe-core` is an out of core refactor of the `thebe` library, containing refactored code from the original. `thebe` was developed as a part of OpenDreamKit – Horizon 2020 European Research Infrastructure project (676541). It is currently stewarded by the Executable Books Project. Additional support was provided by the U.S. Department of Education Open Textbooks Pilot Program funding for the LibreTexts project (P116T180029).
