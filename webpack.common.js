@@ -1,7 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const { DefinePlugin } = require('webpack');
+const { DefinePlugin, NormalModuleReplacementPlugin } = require('webpack');
+
+const shimJS = path.resolve(__dirname, 'src', 'empty.js');
+function shim(regExp) {
+  return new NormalModuleReplacementPlugin(regExp, shimJS);
+}
 
 module.exports = {
   optimization: {
@@ -11,6 +16,7 @@ module.exports = {
     app: './src/thebe/index.ts',
   },
   plugins: [
+    shim(/\.(svg|ttf|eot|woff2|woff)/),
     new HtmlWebpackPlugin({
       title: 'thebe-core',
       template: 'demo/index.html',
@@ -40,10 +46,6 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(png|jpg|gif)$/,
-        use: ['file-loader'],
       },
       {
         test: /fontawesome-free.*\.(svg|eot|ttf|woff)$/,
