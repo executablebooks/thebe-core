@@ -1,4 +1,3 @@
-import { EnhancedStore } from '@reduxjs/toolkit';
 import ThebeSession from './session';
 import ThebeNotebook from './notebook';
 import ThebeServer from './server';

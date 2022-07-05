@@ -1,10 +1,4 @@
-import {
-  RequestServerSettings,
-  RepoProvider,
-  BasicServerSettings,
-  Options,
-  KernelOptions,
-} from './types';
+import { RepoProvider, BasicServerSettings, Options, KernelOptions } from './types';
 import { makeGitHubUrl, makeGitLabUrl, makeGitUrl } from './url';
 import { nanoid } from 'nanoid';
 import { getExistingServer, makeStorageKey, removeServerInfo, saveServerInfo } from './sessions';

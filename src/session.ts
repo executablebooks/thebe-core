@@ -1,8 +1,4 @@
-import { nanoid, Store, Unsubscribe } from '@reduxjs/toolkit';
-import { KernelOptions, Options, ThebeContext } from './types';
-import { Kernel, KernelManager, ServerConnection, Session } from '@jupyterlab/services';
-import { IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
-import ThebeServer from './server';
+import { Session } from '@jupyterlab/services';
 import { ISessionConnection } from '@jupyterlab/services/lib/session/session';
 
 class ThebeSession {

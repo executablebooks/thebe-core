@@ -10,14 +10,15 @@
     "experimentalDecorators": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "dist/cjs",
     "baseUrl": ".",
     "paths": {
       "*/": ["node_modules/*"],
       "~/": ["./src/*"]
     },
     "declaration": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": true
   },
   "include": ["src"]
 }
