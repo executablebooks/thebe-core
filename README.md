@@ -39,3 +39,23 @@ To learn how to build `thebe-core` itself and contribute to the development of t
 ## Usage
 
 For more information on how to invoke thebe and connect to a kernel see [demo/index.html](./demo/index.html) and [demo/demo.js](./demo/demo.js).
+
+# Code of Conduct
+
+See [this statement](https://github.com/executablebooks/meta/tree/master/docs/code-of-conduct.md) from Executable Books.
+
+# License
+
+`thebe-core` is licensed under BSD 3 Clause Revised License - see [LICENSE](./LICENSE).
+
+# Acknowledgements
+
+`thebe-core` is an out of core refactor of the `thebe` library, containing refactored code from the original.
+
+It is currently stewarded by [the Executable Books Team](https://executablebooks.org/en/latest/team.html).
+
+**Previous funding**
+
+`thebe` was initially developed as a part of [OpenDreamKit](https://opendreamkit.org/) – Horizon 2020 European Research Infrastructure project (676541).
+
+Additional support was provided by the U.S. Department of Education Open Textbooks Pilot Program funding for the LibreTexts project (P116T180029).
