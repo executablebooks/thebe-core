@@ -12,4 +12,3 @@ export { default as ThebeCell } from './cell';
 export { default as PassiveCellRenderer } from './passive';
 
 export * from './types';
-export * from './context';
