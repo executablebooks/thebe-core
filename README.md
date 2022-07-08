@@ -36,4 +36,12 @@ For more information on how to invoke thebe and connect to a kernel see [demo/in
 
 # Acknowledgements
 
-`thebe-core` is an out of core refactor of the `thebe` library, containing refactored code from the original. `thebe` was developed as a part of OpenDreamKit – Horizon 2020 European Research Infrastructure project (676541). It is currently stewarded by the Executable Books Project. Additional support was provided by the U.S. Department of Education Open Textbooks Pilot Program funding for the LibreTexts project (P116T180029).
+`thebe-core` is an out of core refactor of the `thebe` library, containing refactored code from the original.
+
+It is currently stewarded by [the Executable Books Team](https://executablebooks.org/en/latest/team.html).
+
+**Previous funding**
+
+`thebe` was initially developed as a part of [OpenDreamKit](https://opendreamkit.org/) – Horizon 2020 European Research Infrastructure project (676541).
+
+Additional support was provided by the U.S. Department of Education Open Textbooks Pilot Program funding for the LibreTexts project (P116T180029).
