@@ -1,7 +1,9 @@
+const func = require('@jupyterlab/testutils/lib/jest-config');
 module.exports = {
+  ...func(__dirname),
   roots: ['<rootDir>'],
   preset: 'ts-jest/presets/default-esm', // or other ESM presets
-  testMatch: ['**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  testRegex: ['tests/.*.spec.ts'],
   moduleNameMapper: {
     '\\.(gif|ttf|eot|svg)$': '@jupyterlab/testutils/lib/jest-file-mock.js',
   },
@@ -16,6 +18,7 @@ module.exports = {
     },
   },
   verbose: true,
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.yalc/', '/dist/'],
+  setupFiles: ['@jupyterlab/testutils/lib/jest-shim.js'],
 };
