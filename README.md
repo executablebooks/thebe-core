@@ -30,6 +30,10 @@ To learn how to build `thebe-core` itself and contribute to the development of t
 
 For more information on how to invoke thebe and connect to a kernel see [demo/index.html](./demo/index.html) and [demo/demo.js](./demo/demo.js).
 
+# Code of Conduct
+
+See [this statement](https://github.com/executablebooks/meta/tree/master/docs/code-of-conduct.md) from Executable Books.
+
 # License
 
 `thebe-core` is licensed under BSD 3 Clause Revised License - see [LICENSE](./LICENSE).
