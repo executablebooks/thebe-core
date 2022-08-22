@@ -1,5 +1,11 @@
 # thebe-core
 
+***This Repository is now archived***
+
+`thebe-core` is now part of the monorepo at https://github.com/executablebooks/thebe currently available on (and released from) the [feat/integrate-thebe-core branch](https://github.com/executablebooks/thebe/tree/feat/integrate-thebe-core) please open any issues and PRs there.
+
+---
+
 `thebe-core` is a headless connector library allowing a developer to connect to and execute code on a Jupyter based compute resource from any Javascript environemnt.
 
 Written in Typescript and indended for use in other packages and applicaitons, `thebe-core` has minimal state and introduces no restrictions on UI frameworks that might be used. [thebe](https://github.com/executablebooks/thebe) will use `thebe-core` to provide a `jquery` based connector, that uses prosemirror to enable editing and execution of code cells on any webpage.
